@@ -497,7 +497,7 @@ This produces::
              'key3b': 42,
              'key3c': [1, 2, 3, 4]},
          'key2b':  [1, 2, 3, 4]}}
-     
+
 
 Controlling indented object types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -548,6 +548,34 @@ Enhanced example::
     key6 = [""]
        This is an array of strings, one per line.
        Each string is dedented appropriately.
+
+
+RSON strings
+'''''''''''''''
+
+There are several ways to specify strings in RSON.
+
+- In many contexts, unquoted strings can be used.  This is
+  usually the case when not using RSON special characters, and
+  sometimes the case even when usin some RSON special characters
+  (after **=** or **:**, on the same line, the first character of the
+  unquoted string cannot be **{**, **[**, or **"**, but subsequent
+  characters can be anything.  No un-escaping is performed.
+
+- JSON-compliant strings can be used.  See the specification
+  at json.org for more information.  Escaping allows any characters
+  to be used in the strings.
+
+- Triple-quoted strings (three double-quotes) can be used.
+  Within these strings, the only time escape characters are used
+  is that \\""" is used for a literal three quotes in a row.
+
+- Multiline strings (**""** followed by indentation) or string lists
+  (**[""]** followed by indentation) can be used.  In either case,
+  no un-escaping is performed, and the strings are dedented such
+  that the left-most line has no whitespace in the string, and the
+  strings are right-stripped of whitespace.
+
 
 Syntax BNF
 -------------
