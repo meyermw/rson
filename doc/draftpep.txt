@@ -1,19 +1,21 @@
-PEP: XXX
-Title: rson -- readable serial object notation
-Version: $Revision$
-Last-Modified: $Date$
-Author: Patrick Maupin <pmaupin@gmail.com>
-Status: Draft
-Type: Standards Track
-Content-Type: text/x-rst
-Created: 28-Feb-2010
-Post-History: 28-Feb-2010
+
+The goal of this project is to produce code of a quality that would
+be suitable for inclusion in the Python Standard Library -- adheres
+to PEP 8, well documented, unit tests, etc.
+
+If the code also happens to be popular enough to be included in the
+Python Standard Library that would be a great thing, because the
+configparser is somewhat limited.
+
+For these reasons (and because it's a useful format for storing this
+sort of formal document), this document is in quasi-PEP form.  It's
+not very good yet, but I hope to polish it as time goes on.
 
 
 Abstract
 ========
 
-This PEP proposes a new standard file format, suitable for configuration
+This document proposes a new standard file format, suitable for configuration
 files and other similar files that are read and written by humans as well
 as by computers.
 
@@ -218,14 +220,14 @@ Semantics
 ------------------
 
 RSON semantics are based on JSON.  Like JSON, an RSON document represents
-either a single scalar object, or a DAG (Directed Acyclic Graph), which
+either a single scalar object, or a tree of objects, which
 may contain only a few simple data types.
 
-In general, this PEP will use the Python nomenclature of dict, list, string,
-number, True, False, and None to represent the JSON nomenclature of object,
-array, string, number, true, false, and null.
+In general, this document will use the Python nomenclature of dict, list,
+string, number, True, False, and None to represent the JSON nomenclature
+of object, array, string, number, true, false, and null.
 
-This PEP does not currently contemplate adding syntax to support additional
+This document does not currently contemplate adding syntax to support additional
 data types or structural organization, although it does contemplate hooks
 in the parser which would allow, for example, for an application to use
 the Decimal class instead of floats and or ints when numeric tokens are
@@ -240,9 +242,9 @@ of supporting more complex document structures is unwarranted.
 The concept of a "merge" in YAML, where two sub-trees of data can be
 merged together (similar to a recursive Python dictionary update)
 is quite useful, though, and will be copied.  This does not alter the
-outcome that parsing a RSON file will result in a DAG, but does give
+outcome that parsing a RSON file will result in a tree, but does give
 more flexibility in the syntax that can be used to achieve a particular
-output DAG.
+output tree.
 
 In RSON, a merge to a non-existent entity is not an error, and will
 create that entity.  Also, in RSON, lists can be merged with preexisting
@@ -585,9 +587,7 @@ TBD, if necessary, once consensus is reached on syntax.
 Implementation
 ================
 
-The PEP author has started an implementation, and done enough design
-work to prove to himself that the parsing overhead is not too abysmal,
-but wants feedback before he finishes and releases it.
+Implementation in progress at rson.googlecode.com
  
 Help would certainly be appreciated on the implementation and testing,
 after consensus is reached on the syntax.
