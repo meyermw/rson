@@ -129,6 +129,8 @@ class Tokenizer(list):
                     # Either strip it or consider it just more potential unquoted string stuff
                     if linestart != offset:
                         append((offset, '#', token, whitespace, indentation, linenum, client))
+                    elif self[-1][1] == '\t':
+                        self.pop()
                 offset -= len(token) + len(whitespace)
 
             # Add a sentinel
