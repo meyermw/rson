@@ -2,38 +2,78 @@ from unittest import TestCase
 import os
 import sys
 
+def strip_comments(text):
+    for line in text.splitlines(True):
+        if not line.lstrip().startswith('#'):
+            yield line
+
 
 class TestTokenizer(TestCase):
 
     def setUp(self):
         from rson.tokenizer import Tokenizer
         self.t = Tokenizer.factory()
+        self.delimiters = Tokenizer.delimiterset
+        self.delimiters2 = self.delimiters | set('@')
+        self.delimiters3 = self.delimiters | set('\n')
 
     def basic_check(self, s):
+        def check(value, msg, *params):
+            if not value:
+                if params:
+                    msg = msg % params
+                msg = 'Error: %s:\n     %s\n' % (msg, token)
+                self.assert_(0, msg)
+
+        delimiters = self.delimiters
+        delimiters2 = self.delimiters2
+        delimiters3 = self.delimiters3
         tokens = self.t(s, self)
+        
         s2 = s.replace('\r\n', '\n').replace('\r', '\n')
         self.assert_(tokens.source == s2)
+        s2 = ''.join(strip_comments(s2))
         result = []
         offset = 1
         linenum = 0
         for token in reversed(tokens):
             #print token, offset
             toffset, t0, ttext, whitespace, tindentation, tlinenum, client = token
-            if linenum != tlinenum:
-                self.assert_(tlinenum == linenum + 1)
+            newline = linenum != tlinenum
+            if newline:
+                check(tlinenum == linenum + 1, 'Invalid line number')
                 linenum = tlinenum
                 indentation = tindentation
                 result.append(indentation)
                 offset -= len(indentation)
-            self.assert_(toffset == offset)
-            self.assert_(client is self)
+
+            check(toffset == offset, 'Expected offset %s', offset)
+            check(client is self, 'Unexpected client')
             offset -= len(ttext) + len(whitespace)
-            self.assert_(tindentation is indentation or t0 == '@')
-            result.append(ttext)
-            result.append(whitespace)
+            check(tindentation is indentation or t0 == '@', 'Unexpected indentation')
+            combined = ttext + whitespace
+            result.append(combined)
+            check('\n' not in combined, 'Unexpected linefeed')
+            check(not whitespace.strip(), 'Whitespace not white')
+
+            if t0 in delimiters2:
+                check(ttext == t0, 'Invalid delimiter')
+            elif t0 == 'X':
+                check(ttext.strip() == ttext, 'unstripped token')
+                check(not (set(ttext) & delimiters3), 'Invalid character in text token')
+            elif t0 == '\t':
+                check(not ttext.strip() and not ttext.startswith(' '), 'invalid whitespace token')
+                check(result[-2].startswith('\n'), 'Invalid whitespace token location')
+            elif t0 == '"':
+                if not ttext.endswith('"'):
+                    check(not (set(ttext) & delimiters3), 'Invalid character in string token')
+            elif t0 == '#':
+                check(not newline, 'Unstripped comment')
+            else:
+                check(0, 'Unexpected token type')
 
         # remove final @ and initial \n
-        result[-2:] = []
+        result.pop()
         result[0] = result[0][1:]
         r2 = ''.join(result)
         self.assert_(r2 == s2)
