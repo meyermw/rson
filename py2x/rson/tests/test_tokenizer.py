@@ -1,11 +1,13 @@
 from unittest import TestCase
 import os
 import sys
+from read_samples import data as samples
 
 def strip_comments(text):
     for line in text.splitlines(True):
         if not line.lstrip().startswith('#'):
-            yield line
+            if line.lstrip(' ') != '\n':
+                yield line
 
 
 class TestTokenizer(TestCase):
@@ -32,7 +34,7 @@ class TestTokenizer(TestCase):
         
         s2 = s.replace('\r\n', '\n').replace('\r', '\n')
         self.assert_(tokens.source == s2)
-        s2 = ''.join(strip_comments(s2))
+        s2 = ''.join(strip_comments(s2)).rstrip('\n')
         result = []
         offset = 1
         linenum = 0
@@ -41,18 +43,23 @@ class TestTokenizer(TestCase):
             toffset, t0, ttext, whitespace, tindentation, tlinenum, client = token
             newline = linenum != tlinenum
             if newline:
-                check(tlinenum == linenum + 1, 'Invalid line number')
+                check(tlinenum > linenum, 'Invalid line number')
+                if tlinenum > linenum + 1 or t0 == '@':
+                    check(toffset < offset, 'Invalid offset change')
+                    offset = toffset
+                else:
+                    offset -= len(tindentation)
+                    
                 linenum = tlinenum
                 indentation = tindentation
                 result.append(indentation)
-                offset -= len(indentation)
 
             check(toffset == offset, 'Expected offset %s', offset)
             check(client is self, 'Unexpected client')
-            offset -= len(ttext) + len(whitespace)
             check(tindentation is indentation or t0 == '@', 'Unexpected indentation')
             combined = ttext + whitespace
             result.append(combined)
+            offset -= len(combined)
             check('\n' not in combined, 'Unexpected linefeed')
             check(not whitespace.strip(), 'Whitespace not white')
 
@@ -76,8 +83,11 @@ class TestTokenizer(TestCase):
         result.pop()
         result[0] = result[0][1:]
         r2 = ''.join(result)
+        #print repr(r2)
+        #print repr(s2)
         self.assert_(r2 == s2)
         return tokens
 
     def test_simple(self):
         self.basic_check('x==y\nz:37')
+        map(self.basic_check, samples)
