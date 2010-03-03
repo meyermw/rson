@@ -2,7 +2,8 @@ import unittest
 
 def all_tests_suite():
     suite = unittest.TestLoader().loadTestsFromNames([
-        'rson.tests.test_sjson',
+        # 'rson.tests.test_sjson',
+        'rson.tests.test_tokenizer',
     ])
     
     return unittest.TestSuite(suite)
