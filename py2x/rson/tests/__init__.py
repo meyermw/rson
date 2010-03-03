@@ -5,6 +5,7 @@ def all_tests_suite():
         # 'rson.tests.test_sjson',
         'rson.tests.test_tokenizer',
         'rson.tests.test_unquoted',
+        'rson.tests.test_quoted',
     ])
     
     return unittest.TestSuite(suite)
