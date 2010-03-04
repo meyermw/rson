@@ -7,7 +7,7 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
 '''
 
-from rson.ejson import EJsonParser, ParseError
+from rson.ejson import EJsonParser
 from rson.unquoted import CompatibleUnquotedToken
 from rson.doublequoted import QuotedToken
 

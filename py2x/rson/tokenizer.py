@@ -6,6 +6,9 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
 import re
 
+class RSONDecodeError(ValueError):
+    pass
+
 class Tokenizer(list):
     ''' The RSON tokenizer uses re.split() to rip the source string
         apart into smaller strings which may or may not be true standalone
@@ -143,3 +146,24 @@ class Tokenizer(list):
 
     def lookahead(self, index=0):
         return self[-1 - index]
+
+    @staticmethod
+    def error(s, token):
+        ''' error performs generic error reporting for tokens
+        '''
+        lineno = token[5]
+        colno = offset = -token[0]
+        if lineno != 1:
+            colno -= token[-1].tokens.source.rfind('\n', offset)
+        if token[1] == '@':
+            loc = 'at end of string'
+        else:
+            text = token[2]
+            loc = 'line %s, column %s, text %s' % (lineno, offset, repr(text[:20]))
+
+        err = RSONDecodeError('%s: %s' % (s, loc))
+        err.pos = offset
+        err.lineno = lineno
+        err.colno = colno
+        raise err
+

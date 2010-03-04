@@ -10,9 +10,6 @@ from rson.tokenizer import Tokenizer
 from rson.unquoted import UnquotedToken
 from rson.doublequoted import QuotedToken
 
-class ParseError(ValueError):
-    pass
-
 class EJsonParser(object):
     ''' Enhanced JSON parser
 
@@ -29,26 +26,10 @@ class EJsonParser(object):
     Tokenizer = Tokenizer
     UnquotedToken = UnquotedToken
     QuotedToken = QuotedToken
+    error = staticmethod(Tokenizer.error)
 
     object_hooks = None, None
     allow_trailing_commas = True
-
-    def error(self, s, token):
-        lineno = token[5]
-        colno = offset = -token[0]
-        if lineno != 1:
-            colno -= self.tokens.source.rfind('\n', offset)
-        if token[1] == '@':
-            loc = 'at end of string'
-        else:
-            text = token[2]
-            loc = 'line %s, column %s, text %s' % (lineno, offset, repr(text[:20]))
-
-        err = ParseError('%s: %s' % (s, loc))
-        err.pos = offset
-        err.lineno = lineno
-        err.colno = colno
-        raise err
 
     @classmethod
     def factory(cls):
@@ -58,9 +39,15 @@ class EJsonParser(object):
         read_quoted = cls.QuotedToken.factory()
         all_delimiters = cls.Tokenizer.delimiterset
         object_hook, object_pairs_hook = cls.object_hooks
-        mydict = dict
         allow_trailing_commas = cls.allow_trailing_commas
 
+
+        if object_pairs_hook is None:
+            mydict = dict
+            if object_hook is None:
+                object_pairs_hook = mydict
+            else:
+                object_pairs_hook = lambda x: object_hook(mydict(x))
 
         def parse(source):
 
@@ -121,12 +108,7 @@ class EJsonParser(object):
                     if t0 != '}':
                         self.error('Expected , or }', token)
                     break
-                if object_pairs_hook is not None:
-                    return object_pairs_hook(result)
-                result = mydict(result)
-                if object_hook is not None:
-                    result = object_hook(result)
-                return result
+                return object_pairs_hook(result)
 
             key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
 
