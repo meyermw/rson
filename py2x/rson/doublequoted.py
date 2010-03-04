@@ -27,8 +27,7 @@ class QuotedToken(object):
                r'\f' : '\f',
                r'\n' : '\n',
                r'\r' : '\r',
-               r'\t' : '\t',
-               r'\u' : None}.get
+               r'\t' : '\t'}.get
 
     @classmethod
     def factory(cls, int=int):
@@ -47,9 +46,12 @@ class QuotedToken(object):
             if '\\' not in s:
                 result = makestr(token, s)
             else:
-
                 s = [mapper(x, x) for x in splitter(s) if x]
-                if None in s:
+                check = set(x for x in s if x.startswith('\\') and len(x) > 1)
+                if check:
+                    bad = [x for x in check if x != '\\u']
+                    if bad:
+                        token[-1].error('Invalid escaped string char %s' % bad[0], token)
                     s.append('')
                     s.reverse()
                     next = s.pop
@@ -57,7 +59,7 @@ class QuotedToken(object):
                     append = result.append
                     while s:
                         x = next()
-                        if x is not None:
+                        if x  != '\\u':
                             append(makestr(token, x))
                             continue
                         x = next()
