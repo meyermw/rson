@@ -31,10 +31,15 @@ class Tokenizer(list):
            [6] Object that the token belongs to (for error reporting)
     '''
 
-    # Like Python, indentation is special.  The only valid indenter is the
-    # space character.  An indentation is always the preceding EOL plus
-    # optional spaces, so we create a dummy EOL for the start of the string.
-    indentation = r'\n *'
+    # Like Python, indentation is special.  I originally planned on making
+    # the space character the only valid indenter, but that got messy
+    # when combined with the desire to be 100% JSON compatible, so, like
+    # JSON, you can indent with any old whitespace, but if you mix and
+    # match, you might be in trouble (like with Python).
+    #
+    # An indentation is always the preceding EOL plus optional spaces,
+    # so we create a dummy EOL for the very start of the string.
+    indentation = r'\n[ \t\v\f\v]*'
 
     # JSON-syntax delimiters are tokenized separately from everything else.
     delimiterset = set(' { } [ ] / : = , '.split())
@@ -95,17 +100,10 @@ class Tokenizer(list):
             append = self.append
 
             # Get the indentation at the start of the file
-            first = next()
-            whitespace = first.lstrip(' ')
-            indentation = '\n' + (len(first) - len(whitespace)) * ' '
+            indentation = '\n' + next()
             offset = 1 - len(indentation)
-            linenum = 1
-
-            # This may be bad, but we will let a higher level complain about it.
-            if whitespace:
-                append((offset, '\t', whitespace, '', indentation, linenum, client))
-                offset -= len(whitespace)
             linestart = offset
+            linenum = 1
 
             # Create all the rest of the tokens
             for token in sourceiter:
@@ -119,9 +117,6 @@ class Tokenizer(list):
                     linenum += 1
                     indentation = token
                     offset -= len(token)
-                    if whitespace:
-                        append((offset, '\t', whitespace, '', indentation, linenum, client))
-                        offset -= len(whitespace)
                     linestart = offset
                     continue
                 else:
@@ -129,8 +124,6 @@ class Tokenizer(list):
                     # Either strip it or consider it just more potential unquoted string stuff
                     if linestart != offset:
                         append((offset, '#', token, whitespace, indentation, linenum, client))
-                    elif self[-1][1] == '\t':
-                        self.pop()
                 offset -= len(token) + len(whitespace)
 
             # Add a sentinel

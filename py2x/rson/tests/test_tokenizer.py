@@ -5,8 +5,8 @@ from read_samples import data as samples
 
 def strip_comments(text):
     for line in text.splitlines(True):
-        l1 = line.lstrip(' ')
-        if l1 and l1 != '\n' and not l1.lstrip().startswith('#'):
+        l1 = line.lstrip()
+        if l1 and not l1.startswith('#'):
             yield line
 
 
@@ -31,7 +31,7 @@ class TestTokenizer(TestCase):
         delimiters2 = self.delimiters2
         delimiters3 = self.delimiters3
         tokens = self.t(s, self)
-        
+
         s2 = s.replace('\r\n', '\n').replace('\r', '\n')
         #print repr(s2)
         self.assert_(tokens.source == s2)
@@ -51,7 +51,7 @@ class TestTokenizer(TestCase):
                     offset = toffset
                 else:
                     offset -= len(tindentation)
-                    
+
                 linenum = tlinenum
                 indentation = tindentation
                 result.append(indentation)
