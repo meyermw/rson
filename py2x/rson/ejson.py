@@ -10,6 +10,8 @@ from rson.tokenizer import Tokenizer
 from rson.unquoted import UnquotedToken
 from rson.doublequoted import QuotedToken
 
+class ParseError(ValueError):
+    pass
 
 class EJsonParser(object):
     ''' Enhanced JSON parser
@@ -32,16 +34,21 @@ class EJsonParser(object):
     allow_trailing_commas = True
 
     def error(self, s, token):
+        lineno = token[5]
+        colno = offset = -token[0]
+        if lineno != 1:
+            colno -= self.tokens.source.rfind('\n', offset)
         if token[1] == '@':
             loc = 'at end of string'
         else:
             text = token[2]
-            linenum = token[5]
-            offset = -token[0]
-            if linenum != 1:
-                offset -= self.tokens.source.rfind('\n', offset)
-            loc = 'line %s, column %s, text %s' % (linenum, offset, repr(text[:20]))
-        raise ValueError('%s: %s' % (s, loc))
+            loc = 'line %s, column %s, text %s' % (lineno, offset, repr(text[:20]))
+
+        err = ParseError('%s: %s' % (s, loc))
+        err.pos = offset
+        err.lineno = lineno
+        err.colno = colno
+        raise err
 
     @classmethod
     def factory(cls):
