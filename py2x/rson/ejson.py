@@ -29,6 +29,7 @@ class EJsonParser(object):
     QuotedToken = QuotedToken
 
     object_hooks = None, None
+    allow_trailing_commas = True
 
     def error(self, s, token):
         if token[1] == '@':
@@ -51,6 +52,7 @@ class EJsonParser(object):
         all_delimiters = cls.Tokenizer.delimiterset
         object_hook, object_pairs_hook = cls.object_hooks
         mydict = dict
+        allow_trailing_commas = cls.allow_trailing_commas
 
 
         def parse(source):
@@ -74,6 +76,8 @@ class EJsonParser(object):
                     token = next()
                     t0 = token[1]
                     if t0 == ']':
+                        if result and not allow_trailing_commas:
+                            self.error('Trailing comma not allowed', token)
                         return result
                     append(json_dispatch(t0,  bad_array_element)(token))
                     token = next()
@@ -91,6 +95,8 @@ class EJsonParser(object):
                     token = next()
                     t0 = token[1]
                     if t0  == '}':
+                        if result and not allow_trailing_commas:
+                            self.error('Trailing comma not allowed', token)
                         break
                     key = key_dispatch(t0, bad_dict_key)(token)
                     token = next()
@@ -132,7 +138,7 @@ class EJsonParser(object):
             value = json_dispatch(firsttok[1], bad_top_value)(firsttok)
             lasttok = next()
             if lasttok[1] != '@':
-                self.error('Expected end of string', token)
+                self.error('Expected end of string', lasttok)
             return value
 
         return parse

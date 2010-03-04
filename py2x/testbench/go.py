@@ -8,7 +8,7 @@ import tests
 import simplejson
 from simplejson.decoder import JSONDecodeError
 from rson.ejson import EJsonParser
-from rson.unquoted import StrictUnquotedToken
+from rson.unquoted import CompatibleUnquotedToken
 from rson.doublequoted import QuotedToken
 
 class MyDecodeError(JSONDecodeError):
@@ -53,14 +53,15 @@ class MyQuotedToken(QuotedToken):
 
 def loads(s, **kw):
 
-    class MyUnquoted(StrictUnquotedToken):
-        makefloat = kw.pop('parse_float', None) or StrictUnquotedToken.makefloat
-        makeint = kw.pop('parse_int', None) or StrictUnquotedToken.makeint
+    class MyUnquoted(CompatibleUnquotedToken):
+        makefloat = kw.pop('parse_float', None) or CompatibleUnquotedToken.makefloat
+        makeint = kw.pop('parse_int', None) or CompatibleUnquotedToken.makeint
 
     class MyParser(EJsonParser):
         UnquotedToken = MyUnquoted
         QuotedToken = MyQuotedToken
         object_hooks = kw.pop('object_hook', None), kw.pop('object_pairs_hook', None)
+        allow_trailing_commas = False
 
         def error(self, msg, token):
             raise MyDecodeError(msg, token)

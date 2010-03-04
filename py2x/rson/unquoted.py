@@ -105,3 +105,14 @@ class StrictUnquotedToken(UnquotedToken):
         )
     )  \Z                               # Match end of string
     '''
+
+class CompatibleUnquotedToken(StrictUnquotedToken):
+    ''' Compatible JSON-only token syntax,
+        tries to work same as simplejson
+    '''
+
+    unquoted_pattern = StrictUnquotedToken.unquoted_pattern.replace('true',
+            'true | Infinity')
+    special_strings = StrictUnquotedToken.special_strings.copy()
+    for x in 'Infinity NaN'.split():
+        special_strings[x] = float(x)
