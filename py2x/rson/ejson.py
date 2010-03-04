@@ -28,6 +28,8 @@ class EJsonParser(object):
     UnquotedToken = UnquotedToken
     QuotedToken = QuotedToken
 
+    object_hooks = None, None
+
     def error(self, s, token):
         if token[1] == '@':
             loc = 'at end of string'
@@ -47,6 +49,7 @@ class EJsonParser(object):
         read_unquoted = cls.UnquotedToken.factory()
         read_quoted = cls.QuotedToken.factory()
         all_delimiters = cls.Tokenizer.delimiterset
+        object_hook, object_pairs_hook = cls.object_hooks
 
 
         def parse(source):
@@ -100,9 +103,13 @@ class EJsonParser(object):
                     t0 = token[1]
                     if t0 == ',':
                         continue
-                    if t0 == '}':
-                        return result
-                    self.error('Expected , or }', token)
+                    if t0 != '}':
+                        self.error('Expected , or }', token)
+                    if object_pairs_hook is not None:
+                        return map(object_pairs_hook, result.iteritems())
+                    if object_hook is not None:
+                        result = object_hook(result)
+                    return result
 
             key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
 
@@ -117,7 +124,11 @@ class EJsonParser(object):
             lookahead = tokens.lookahead
 
             firsttok = next()
-            return json_dispatch(firsttok[1], bad_top_value)(firsttok)
+            value = json_dispatch(firsttok[1], bad_top_value)(firsttok)
+            lasttok = next()
+            if lasttok[1] != '@':
+                self.error('Expected end of string', token)
+            return value
 
         return parse
 

@@ -51,15 +51,12 @@ class MyDecodeError(JSONDecodeError):
 def loads(s, **kw):
 
     class MyUnquoted(StrictUnquotedToken):
-        makefloat = kw.pop('parse_float', None)
-        if makefloat is None:
-            del makefloat
-        makeint = kw.pop('parse_int', None)
-        if makeint is None:
-            del makeint
+        makefloat = kw.pop('parse_float', None) or StrictUnquotedToken.makefloat
+        makeint = kw.pop('parse_int', None) or StrictUnquotedToken.makeint
 
     class MyParser(EJsonParser):
         UnquotedToken = MyUnquoted
+        object_hooks = kw.pop('object_hook', None), kw.pop('object_pairs_hook', None)
 
         def error(self, msg, token):
             raise MyDecodeError(msg, token)
