@@ -85,12 +85,16 @@ class Tokenizer(list):
     splitter = re.compile(pattern).split
 
     @classmethod
-    def factory(cls, len=len, iter=iter):
+    def factory(cls, len=len, iter=iter, unicode=unicode, isinstance=isinstance):
         splitter = cls.splitter
         delimiterset = set(cls.delimiterset) | set('"')
 
         def newstring(source, client):
             self = cls()
+
+            # Deal with 8 bit bytes for now
+            if isinstance(source, unicode):
+                source = source.encode('utf-8')
 
             # Convert MS-DOS or Mac line endings to the one true way
             source = source.replace('\r\n', '\n').replace('\r', '\n')

@@ -2,7 +2,7 @@ import unittest
 
 def all_tests_suite():
     suite = unittest.TestLoader().loadTestsFromNames([
-        # 'tests.test_sjson',
+        'tests.test_sjson',
         'tests.test_tokenizer',
         'tests.test_unquoted',
         'tests.test_quoted',
