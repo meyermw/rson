@@ -1,0 +1,50 @@
+
+This file contains samples for testing the tokenizer and parser.
+
+In general, every time a linefeed is followed by three dashes and
+another linefeed, it indicates the end of one sample and start of
+another.
+
+Also, single dashes are removed (to allow whitespace at the end
+of a line for testing with editors that auto strip it), and two
+consecutive dashes are treated as a tab character.
+
+---
+
+In RSON, comments start with the # character.
+
+# This is a comment
+
+     # This is a comment too.
+
+     -- -- # Comments can occur after tabs
+
+---
+
+Here are some example RSON tokens:
+    [] "" {} / = :
+
+@ is not really a token but is used as an internal indicator.
+
+---
+
+Different string types:
+
+"""abc
+"
+""
+"abc"
+"\n"
+ -
+
+ "a\n\""
+
+ ---
+
+ Check tokens embedded in other stuff.
+
+ kdf[a"bc2=]# xxx{}
+
+ ---
+ #Check comment on first line
+
