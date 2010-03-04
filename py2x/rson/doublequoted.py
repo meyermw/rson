@@ -59,7 +59,7 @@ class QuotedToken(object):
                         continue
                     x = next()
                     leftovers = x[4:]
-                    digits = [x[:4] + 'ZZZZ'][:4]
+                    digits = (x[:4] + 'ZZZZ')[:4]
                     try:
                         value = int(digits, 16)
                     except:

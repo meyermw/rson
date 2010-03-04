@@ -36,7 +36,7 @@ class EJsonParser(object):
             linenum = token[5]
             offset = -token[0]
             if linenum != 1:
-                offset -= self.tokens.source.rfind(offset, '\n')
+                offset -= self.tokens.source.rfind('\n', offset)
             loc = 'line %s, column %s, text %s' % (linenum, offset, repr(text[:20]))
         raise ValueError('%s: %s' % (s, loc))
 
