@@ -4,8 +4,6 @@ Tokenizer for RSON.
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 '''
 
-# XXX: TODO:  RECURSE ON NON-COMMENT-STARTING #
-
 import re
 
 class Tokenizer(list):
@@ -40,7 +38,8 @@ class Tokenizer(list):
     #
     # An indentation is always the preceding EOL plus optional spaces,
     # so we create a dummy EOL for the very start of the string.
-    indentation = r'\n[ \t\v\f\v]*'
+    # Could also have an embedded comment
+    indentation = r'\n[ \t\v\f\v]*(?:#.*)?'
 
     # JSON-syntax delimiters are tokenized separately from everything else.
     delimiterset = set(' { } [ ] / : = , '.split())
@@ -61,10 +60,6 @@ class Tokenizer(list):
 
     triple_quoted_string = '"""'
 
-    # Comments (where allowed) consist of the # and all the remaining
-    # characters on the same line.
-    comment = r'(?:^|\s)#.*'
-
     # Any non-whitespace, non-delimiter, group of characters is in the "other"
     # category.  This group can have embedded whitespace, but ends on a
     # non-whitespace character.
@@ -78,7 +73,6 @@ class Tokenizer(list):
       delimiter_pattern,
       triple_quoted_string,
       quoted_string,
-      comment,
       other
     ])
 
@@ -98,38 +92,40 @@ class Tokenizer(list):
 
             # Convert MS-DOS or Mac line endings to the one true way
             source = source.replace('\r\n', '\n').replace('\r', '\n')
-
-            # Set up to iterate over the source and add to the destination list
-            sourceiter = iter(splitter(source))
-            next = sourceiter.next
-            append = self.append
+            sourcelist = splitter(source)
 
             # Get the indentation at the start of the file
-            indentation = '\n' + next()
-            offset = 1 - len(indentation)
-            linestart = offset
+            indentation = '\n' + sourcelist[0]
             linenum = 1
+            linestart = offset = 0
 
-            # Create all the rest of the tokens
+            # Set up to iterate over the source and add to the destination list
+            sourceiter = iter(sourcelist)
+            next = sourceiter.next
+            append = self.append
+            offset -= len(next())
+
+            # Strip comment from first line
+            if len(sourcelist) > 1 and sourcelist[1].startswith('#'):
+                i = 1
+                while len(sourcelist) > i and not sourcelist[i].startswith('\n'):
+                    i += 1
+                    offset -= len(next())
+                    
+            # Create all the tokens
             for token in sourceiter:
                 whitespace = next()
                 t0 = token[0]
-                if t0 in delimiterset:
+                if t0 != '\n':
+                    if t0 not in delimiterset:
+                        t0 = 'X'
                     append((offset, t0, token, whitespace, indentation, linenum, client))
-                elif t0 not in '\n#':
-                    append((offset, 'X', token, whitespace, indentation, linenum, client))
-                elif t0 == '\n':
+                    offset -= len(token) + len(whitespace)
+                else:
                     linenum += 1
                     indentation = token
                     offset -= len(token)
                     linestart = offset
-                    continue
-                else:
-                    # Must be comment (#)
-                    # Either strip it or consider it just more potential unquoted string stuff
-                    if linestart != offset:
-                        append((offset, '#', token, whitespace, indentation, linenum, client))
-                offset -= len(token) + len(whitespace)
 
             # Add a sentinel
             append((offset, '@', '@', '', '', linenum, client))
