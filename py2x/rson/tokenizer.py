@@ -4,6 +4,7 @@ Tokenizer for RSON.
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 '''
 
+# XXX: TODO:  RECURSE ON NON-COMMENT-STARTING #
 
 import re
 
@@ -62,7 +63,7 @@ class Tokenizer(list):
 
     # Comments (where allowed) consist of the # and all the remaining
     # characters on the same line.
-    comment = r'#.*'
+    comment = r'(?:^|\s)#.*'
 
     # Any non-whitespace, non-delimiter, group of characters is in the "other"
     # category.  This group can have embedded whitespace, but ends on a
