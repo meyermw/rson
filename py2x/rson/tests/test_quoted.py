@@ -21,14 +21,11 @@ class TestQuoted(TestCase):
         self.q = QuotedToken.factory()
 
     def test_simple(self):
-        tests = '''  "a" "" "abc" "abc\\n\\ndef'''.replace(' ', '\n')
+        tests = '''  "a" "" "abc" "abc\\n\\ndef"'''.replace(' ', '\n')
         tokens = list(reversed(self.t(tests, self)))
         tokens.pop()
 
         a = map(self.q, tokens)
         b = map(expected, tests.split())
-        print '***'
-        print a
-        print b
         self.assert_(a == b)
         

@@ -1,27 +1,3 @@
-
-################################################################################
-####  NOTE:  THIS IS STILL IN DEVELOPMENT -- NOT A WORKING PACKAGE YET!!!   ####
-################################################################################
-
-'''
-RSON -- readable serial object notation
-
-RSON is a superset of JSON with relaxed syntax for human readability.
-
-Simple usage example:
-            import rson
-            obj = rson.loads(source)
-
-Additional documentation available at:
-
-http://code.google.com/p/rson/
-'''
-
-__version__ = '0.1.00'
-
-__author__ = 'Patrick Maupin <pmaupin@gmail.com>'
-
-__copyright__ = '''
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
  Permission is hereby granted, free of charge, to any person
@@ -44,4 +20,3 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
- '''
