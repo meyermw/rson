@@ -9,6 +9,7 @@ import simplejson
 from simplejson.decoder import JSONDecodeError
 from rson.ejson import EJsonParser
 from rson.unquoted import StrictUnquotedToken
+from rson.doublequoted import QuotedToken
 
 class MyDecodeError(JSONDecodeError):
     """Subclass of ValueError with the following additional properties:
@@ -47,6 +48,8 @@ class MyDecodeError(JSONDecodeError):
         #    self.endlineno, self.endcolno = None, None
 
 
+class MyQuotedToken(QuotedToken):
+    cachestrings = True
 
 def loads(s, **kw):
 
@@ -56,6 +59,7 @@ def loads(s, **kw):
 
     class MyParser(EJsonParser):
         UnquotedToken = MyUnquoted
+        QuotedToken = MyQuotedToken
         object_hooks = kw.pop('object_hook', None), kw.pop('object_pairs_hook', None)
 
         def error(self, msg, token):

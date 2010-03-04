@@ -50,6 +50,7 @@ class EJsonParser(object):
         read_quoted = cls.QuotedToken.factory()
         all_delimiters = cls.Tokenizer.delimiterset
         object_hook, object_pairs_hook = cls.object_hooks
+        mydict = dict
 
 
         def parse(source):
@@ -84,12 +85,13 @@ class EJsonParser(object):
                     self.error('Expected ]', token)
 
             def read_json_dict(token):
-                result = {}
+                result = []
+                append = result.append
                 while 1:
                     token = next()
                     t0 = token[1]
                     if t0  == '}':
-                        return result
+                        break
                     key = key_dispatch(t0, bad_dict_key)(token)
                     token = next()
                     t0 = token[1]
@@ -98,18 +100,20 @@ class EJsonParser(object):
                     token = next()
                     t0 = token[1]
                     value = json_dispatch(t0, bad_dict_value)(token)
-                    result[key] = value
+                    append((key, value))
                     token = next()
                     t0 = token[1]
                     if t0 == ',':
                         continue
                     if t0 != '}':
                         self.error('Expected , or }', token)
-                    if object_pairs_hook is not None:
-                        return map(object_pairs_hook, result.iteritems())
-                    if object_hook is not None:
-                        result = object_hook(result)
-                    return result
+                    break
+                if object_pairs_hook is not None:
+                    return object_pairs_hook(result)
+                result = mydict(result)
+                if object_hook is not None:
+                    result = object_hook(result)
+                return result
 
             key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
 
@@ -117,6 +121,7 @@ class EJsonParser(object):
                              '{': read_json_dict, '"':read_quoted}.get
 
             self = cls()
+            self.stringcache = {}.setdefault
             self.tokens = tokens = tokenizer(source, self)
             next = tokens.next
             peek = tokens.peek

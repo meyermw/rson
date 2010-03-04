@@ -17,6 +17,7 @@ class QuotedToken(object):
           lambda token, s, unicode=unicode: unicode(s, 'utf-8'))
     makechr = unichr
     join = u''.join
+    cachestrings = False
 
     splitter = re.compile(r'(\\.)').split
     mapper = { '\\\\' : '\\',
@@ -36,6 +37,7 @@ class QuotedToken(object):
         makestr = cls.makestr
         makechr = cls.makechr
         join = cls.join
+        cachestrings = cls.cachestrings
 
         def parse(token):
             s = token[2]
@@ -43,31 +45,35 @@ class QuotedToken(object):
                 token[-1].error('No end quote on string', token)
             s = s[1:-1]
             if '\\' not in s:
-                return makestr(token, s)
-
-            s = [mapper(x, x) for x in splitter(s) if x]
-            if None in s:
-                s.append('')
-                s.reverse()
-                next = s.pop
-                result = []
-                append = result.append
-                while s:
-                    x = next()
-                    if x is not None:
-                        append(makestr(token, x))
-                        continue
-                    x = next()
-                    leftovers = x[4:]
-                    digits = (x[:4] + 'ZZZZ')[:4]
-                    try:
-                        value = int(digits, 16)
-                    except:
-                        token[-1].error('Invalid escaped unicode char: \\u %s' % repr(x[:4]), token)
-                    append(makechr(value))
-                    append(makestr(token, leftovers))
+                result = makestr(token, s)
             else:
-                result = [makestr(token, x) for x in s]
-            return join(result)
+
+                s = [mapper(x, x) for x in splitter(s) if x]
+                if None in s:
+                    s.append('')
+                    s.reverse()
+                    next = s.pop
+                    result = []
+                    append = result.append
+                    while s:
+                        x = next()
+                        if x is not None:
+                            append(makestr(token, x))
+                            continue
+                        x = next()
+                        leftovers = x[4:]
+                        digits = (x[:4] + 'ZZZZ')[:4]
+                        try:
+                            value = int(digits, 16)
+                        except:
+                            token[-1].error('Invalid escaped unicode char: \\u %s' % repr(x[:4]), token)
+                        append(makechr(value))
+                        append(makestr(token, leftovers))
+                else:
+                    result = [makestr(token, x) for x in s]
+                result = join(result)
+            if cachestrings:
+                result = token[-1].stringcache(result, result)
+            return result
 
         return parse
