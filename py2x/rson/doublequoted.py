@@ -31,7 +31,7 @@ class QuotedToken(object):
                r'\t' : u'\t'}.get
 
     @classmethod
-    def factory(cls, int=int):
+    def factory(cls, int=int, iter=iter, len=len):
         splitter = cls.splitter
         mapper = cls.mapper
         makestr = cls.makestr
@@ -45,27 +45,29 @@ class QuotedToken(object):
             s = token[2]
             if len(s) < 2 or not (s[0] == s[-1] == '"'):
                 token[-1].error('No end quote on string', token)
-            s = s[1:-1]
-            result = []
-            append = result.append
-            s = iter(splitter(s))
-            next = s.next
-            append(makestr(token, next()))
-            for special in s:
-                nonmatch = next()
-                remap = mapper(special)
-                if remap is None:
-                    if special.startswith(r'\u') and len(special) == 6:
-                        uni = int(special[2:], 16)
-                        if 0xd800 <= uni <= 0xdbff and allow_double:
-                            uni, nonmatch = parse_double(uni, nonmatch, next, token)
-                        remap = makechr(uni)
-                    else:                    
-                        token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
-                append(remap)
-                append(makestr(token, nonmatch))
-
-            result = join(result)
+            s = splitter(s[1:-1])
+            result = makestr(token, s[0])
+            if len(s) > 1:
+                result = [result]
+                append = result.append
+                s = iter(s)
+                next = s.next
+                next()
+                for special in s:
+                    nonmatch = next()
+                    remap = mapper(special)
+                    if remap is None:
+                        if len(special) == 6:
+                            uni = int(special[2:], 16)
+                            if 0xd800 <= uni <= 0xdbff and allow_double:
+                                uni, nonmatch = parse_double(uni, nonmatch, next, token)
+                            remap = makechr(uni)
+                        else:                    
+                            token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
+                    append(remap)
+                    append(makestr(token, nonmatch))
+    
+                result = join(result)
             if cachestrings:
                 result = token[-1].stringcache(result, result)
             return result
