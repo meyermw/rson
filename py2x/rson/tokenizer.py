@@ -47,8 +47,10 @@ class Tokenizer(list):
     # RSON syntax delimiters are tokenized separately from everything else.
     delimiterset = set(' { } [ ] / : = , '.split())
 
+    re_delimiterset = ''.join(delimiterset).replace(']', r'\]')
+
     # Create a RE pattern for the delimiters
-    delimiter_pattern = '|'.join(r'\%s' % x for x in delimiterset)
+    delimiter_pattern = '[%s]' % re_delimiterset
 
     # A regular quoted string must terminate before the end of the line,
     # and \ can be used as the internal escape character.
@@ -66,8 +68,6 @@ class Tokenizer(list):
     # Any non-whitespace, non-delimiter, group of characters is in the "other"
     # category.  This group can have embedded whitespace, but ends on a
     # non-whitespace character.
-
-    re_delimiterset = ''.join(delimiterset).replace(']', r'\]')
 
     other = r'[\S](?:[^%s\n]*[^%s\s])*' % (re_delimiterset, re_delimiterset)
 
