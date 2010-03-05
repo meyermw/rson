@@ -41,7 +41,7 @@ class QuotedToken(object):
 
         allow_double = sys.maxunicode > 65535
 
-        def parse(token):
+        def parse(token, next):
             s = token[2]
             if len(s) < 2 or not (s[0] == s[-1] == '"'):
                 token[-1].error('No end quote on string', token)
@@ -62,11 +62,11 @@ class QuotedToken(object):
                             if 0xd800 <= uni <= 0xdbff and allow_double:
                                 uni, nonmatch = parse_double(uni, nonmatch, next, token)
                             remap = makechr(uni)
-                        else:                    
+                        else:
                             token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
                     append(remap)
                     append(makestr(token, nonmatch))
-    
+
                 result = join(result)
             if cachestrings:
                 result = token[-1].stringcache(result, result)

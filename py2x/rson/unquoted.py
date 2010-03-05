@@ -65,7 +65,7 @@ class UnquotedToken(object):
         makeint = cls.makeint
         special = cls.special_strings
 
-        def parse(token):
+        def parse(token, next):
             s = token[2]
             m = unquoted_match(s)
             if m is None:

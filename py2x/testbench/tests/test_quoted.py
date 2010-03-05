@@ -25,7 +25,6 @@ class TestQuoted(TestCase):
         tokens = list(reversed(self.t(tests, self)))
         tokens.pop()
 
-        a = map(self.q, tokens)
+        a = map(self.q, tokens, tokens)
         b = map(expected, tests.split())
         self.assert_(a == b)
-        

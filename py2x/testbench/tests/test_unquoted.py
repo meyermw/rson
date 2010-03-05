@@ -17,7 +17,7 @@ def expected(s):
         return float(s)
     except:
         return unicode(s)
-        
+
 
 class TestUnquoted(TestCase):
 
@@ -32,7 +32,6 @@ class TestUnquoted(TestCase):
         tokens = list(reversed(self.t(tests, self)))
         tokens.pop()
 
-        a = map(self.u, tokens)
+        a = map(self.u, tokens, tokens)
         b = map(expected, tests.split())
         self.assert_(a == b)
-        

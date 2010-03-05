@@ -49,82 +49,78 @@ class EJsonParser(object):
             else:
                 object_pairs_hook = lambda x: object_hook(mydict(x))
 
-        def parse(source):
+        def bad_array_element(token, next):
+            error('Expected array element', token)
 
-            def bad_array_element(token):
-                error('Expected array element', token)
+        def bad_dict_key(token, next):
+            error('Expected dictionary key', token)
 
-            def bad_dict_key(token):
-                error('Expected dictionary key', token)
+        def bad_dict_value(token, next):
+            error('Expected dictionary value', token)
 
-            def bad_dict_value(token):
-                error('Expected dictionary value', token)
+        def bad_top_value(token, next):
+            error('Expected start of object', token)
 
-            def bad_top_value(token):
-                error('Expected start of object', token)
+        def read_json_array(token, next):
+            result = []
+            append = result.append
+            while 1:
+                token = next()
+                t0 = token[1]
+                if t0 == ']':
+                    if result and not allow_trailing_commas:
+                        error('Trailing comma not allowed', token)
+                    return result
+                append(value_dispatch(t0,  bad_array_element)(token, next))
+                token = next()
+                t0 = token[1]
+                if t0 ==',':
+                    continue
+                if t0 == ']':
+                    return result
+                error('Expected ]', token)
 
-            def read_json_array(token):
-                result = []
-                append = result.append
-                while 1:
-                    token = next()
-                    t0 = token[1]
-                    if t0 == ']':
-                        if result and not allow_trailing_commas:
-                            error('Trailing comma not allowed', token)
-                        return result
-                    append(json_dispatch(t0,  bad_array_element)(token))
-                    token = next()
-                    t0 = token[1]
-                    if t0 ==',':
-                        continue
-                    if t0 == ']':
-                        return result
-                    error('Expected ]', token)
-
-            def read_json_dict(token):
-                result = []
-                append = result.append
-                while 1:
-                    token = next()
-                    t0 = token[1]
-                    if t0  == '}':
-                        if result and not allow_trailing_commas:
-                            error('Trailing comma not allowed', token)
-                        break
-                    key = key_dispatch(t0, bad_dict_key)(token)
-                    token = next()
-                    t0 = token[1]
-                    if t0 not in ':=':
-                        error('Expected : or = after dict key', token)
-                    token = next()
-                    t0 = token[1]
-                    value = json_dispatch(t0, bad_dict_value)(token)
-                    append((key, value))
-                    token = next()
-                    t0 = token[1]
-                    if t0 == ',':
-                        continue
-                    if t0 != '}':
-                        error('Expected , or }', token)
+        def read_json_dict(token, next):
+            result = []
+            append = result.append
+            while 1:
+                token = next()
+                t0 = token[1]
+                if t0  == '}':
+                    if result and not allow_trailing_commas:
+                        error('Trailing comma not allowed', token)
                     break
-                return object_pairs_hook(result)
+                key = key_dispatch(t0, bad_dict_key)(token, next)
+                token = next()
+                t0 = token[1]
+                if t0 not in ':=':
+                    error('Expected : or = after dict key', token)
+                token = next()
+                t0 = token[1]
+                value = value_dispatch(t0, bad_dict_value)(token, next)
+                append((key, value))
+                token = next()
+                t0 = token[1]
+                if t0 == ',':
+                    continue
+                if t0 != '}':
+                    error('Expected , or }', token)
+                break
+            return object_pairs_hook(result)
 
-            key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
+        key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
 
-            json_dispatch = {'X':read_unquoted, '[':read_json_array,
-                             '{': read_json_dict, '"':read_quoted}.get
+        value_dispatch = {'X':read_unquoted, '[':read_json_array,
+                         '{': read_json_dict, '"':read_quoted}.get
 
-            self = cls()
-            self.tokens = tokens = tokenizer(source, self)
+
+        def parse(source):
+            tokens = tokenizer(source, None)
             tokens.stringcache = {}.setdefault
             next = tokens.next
-            peek = tokens.peek
-            push = tokens.push
-            lookahead = tokens.lookahead
 
             firsttok = next()
-            value = json_dispatch(firsttok[1], bad_top_value)(firsttok)
+            value = value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
             lasttok = next()
             if lasttok[1] != '@':
                 error('Expected end of string', lasttok)
