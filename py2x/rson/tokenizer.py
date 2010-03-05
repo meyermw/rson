@@ -126,13 +126,15 @@ class Tokenizer(list):
                 whitespace = next()
                 t0 = token[0]
                 if t0 not in delimiterset:
-                    if t0 == '\n':
-                        linenum += 1
-                        indentation = token
-                        offset -= len(token)
-                        linestart = offset
-                        continue
-                    t0 = 'X'
+                    if t0 in '\n;':
+                        if t0 == '\n':
+                            linenum += 1
+                            indentation = token
+                            offset -= len(token)
+                            linestart = offset
+                            continue
+                    else:
+                        t0 = 'X'
                 self[index] = (offset, t0, token, whitespace, indentation, linenum, self)
                 index += 1
                 offset -= len(token) + len(whitespace)

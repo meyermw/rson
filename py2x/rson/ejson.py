@@ -61,51 +61,76 @@ class EJsonParser(object):
         def bad_top_value(token, next):
             error('Expected start of object', token)
 
-        def read_json_array(token, next):
+        def read_json_array(firsttok, next, entirestring=False):
             result = []
             append = result.append
             while 1:
                 token = next()
                 t0 = token[1]
-                if t0 == ']':
+                if t0 in ']@':
                     if result and not allow_trailing_commas:
-                        error('Trailing comma not allowed', token)
-                    return result
+                        error('Unexpected trailing comma', token)
+                    break
                 append(value_dispatch(t0,  bad_array_element)(token, next))
-                token = next()
-                t0 = token[1]
-                if t0 ==',':
+                delim = next()
+                t0 = delim[1]
+                if t0 in ',;':
                     continue
-                if t0 == ']':
-                    return result
-                error('Expected ]', token)
 
-        def read_json_dict(token, next):
+                # Allow line ending to be used as a comma, so
+                # just pretend we got a comma if on a new line
+                if t0 not in ']@' and token[-2] != delim[-2]:
+                    token[-1].push(delim)
+                    continue
+                token = delim
+                break
+
+            if t0 != ']':
+                if t0 != '@':
+                    error('Expected "," or "]"', token)
+                if not entirestring:
+                    error('Unterminated list (no matching "]")', firsttok)
+
+            return result
+
+        def read_json_dict(token, next, entirestring=False):
             result = []
             append = result.append
             while 1:
                 token = next()
                 t0 = token[1]
-                if t0  == '}':
+                if t0  in '}@':
                     if result and not allow_trailing_commas:
-                        error('Trailing comma not allowed', token)
+                        error('Unexpected trailing comma', token)
                     break
                 key = key_dispatch(t0, bad_dict_key)(token, next)
                 token = next()
                 t0 = token[1]
                 if t0 not in ':=':
-                    error('Expected : or = after dict key', token)
+                    error('Expected ":" or "=" after dict key %s' % repr(key), token)
                 token = next()
                 t0 = token[1]
                 value = value_dispatch(t0, bad_dict_value)(token, next)
                 append((key, value))
-                token = next()
-                t0 = token[1]
-                if t0 == ',':
+                delim = next()
+                t0 = delim[1]
+                if t0 in ',;':
                     continue
-                if t0 != '}':
-                    error('Expected , or }', token)
+
+                # Allow line ending to be used as a comma, so
+                # just pretend we got a comma if on a new line
+                if t0 not in '}@' and token[-2] != delim[-2]:
+                    token[-1].push(delim)
+                    continue
+                token = delim
                 break
+
+            if t0 != '}':
+                if t0 != '@':
+                    error('Expected "," or "}"', token)
+                if not entirestring:
+                    error('Unterminated dict (no matching "}")', firsttok)
+
             return object_pairs_hook(result)
 
         key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
@@ -120,11 +145,22 @@ class EJsonParser(object):
             next = tokens.next
 
             firsttok = next()
-            value = value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
-            lasttok = next()
-            if lasttok[1] != '@':
-                error('Expected end of string', lasttok)
+            t0 = firsttok[1]
+            t1 = t0 == '@' and '@' or tokens.peek()[1]
+            if t0 in '{[' or t1 == '@':
+                value = value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
+                lasttok = next()
+                if lasttok[1] != '@':
+                    error('Unexpected additional data', lasttok)
+            else:
+                tokens.push(firsttok)
+                func = (t1 in ':=') and read_json_dict or read_json_array
+                value = func(None, next, True)
+                if tokens:
+                    closing = ']}'[t1 in ':=']
+                    error('Unexpected %s before this' % closing, next())
             return value
+                
 
         return parse
 
