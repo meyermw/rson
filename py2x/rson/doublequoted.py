@@ -19,8 +19,9 @@ class QuotedToken(object):
     makechr = unichr
     join = u''.join
     cachestrings = False
+    triplequoted = None
 
-    splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.)').split
+    splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|")').split
     mapper = { '\\\\' : u'\\',
                r'\"' : u'"',
                r'\/' : u'/',
@@ -38,8 +39,14 @@ class QuotedToken(object):
         makechr = cls.makechr
         join = cls.join
         cachestrings = cls.cachestrings
+        triplequoted = cls.triplequoted
 
         allow_double = sys.maxunicode > 65535
+
+        def badstring(token, special):
+            if token[2] != '"""' or triplequoted is None:
+                token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
+            return triplequoted(token)
 
         def parse(token, next):
             s = token[2]
@@ -63,7 +70,7 @@ class QuotedToken(object):
                                 uni, nonmatch = parse_double(uni, nonmatch, next, token)
                             remap = makechr(uni)
                         else:
-                            token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
+                            return badstring(token, special)
                     append(remap)
                     append(makestr(token, nonmatch))
 
