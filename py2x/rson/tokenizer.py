@@ -106,7 +106,6 @@ class Tokenizer(list):
             # Set up to iterate over the source and add to the destination list
             sourceiter = iter(sourcelist)
             next = sourceiter.next
-            append = self.append
             offset -= len(next())
 
             # Strip comment from first line
@@ -116,23 +115,31 @@ class Tokenizer(list):
                     i += 1
                     offset -= len(next())
 
+
+            # Preallocate the list
+            self.append(None)
+            self *= len(sourcelist) / 2 + 1
+            index = 0
+
             # Create all the tokens
             for token in sourceiter:
                 whitespace = next()
                 t0 = token[0]
-                if t0 != '\n':
-                    if t0 not in delimiterset:
-                        t0 = 'X'
-                    append((offset, t0, token, whitespace, indentation, linenum, self))
-                    offset -= len(token) + len(whitespace)
-                else:
-                    linenum += 1
-                    indentation = token
-                    offset -= len(token)
-                    linestart = offset
+                if t0 not in delimiterset:
+                    if t0 == '\n':
+                        linenum += 1
+                        indentation = token
+                        offset -= len(token)
+                        linestart = offset
+                        continue
+                    t0 = 'X'
+                self[index] = (offset, t0, token, whitespace, indentation, linenum, self)
+                index += 1
+                offset -= len(token) + len(whitespace)
 
             # Add a sentinel
-            append((offset, '@', '@', '', '', linenum, self))
+            self[index] = (offset, '@', '@', '', '', linenum, self)
+            self[index+1:] = []
 
             # Put everything we need in the actual object instantiation
             self.reverse()
