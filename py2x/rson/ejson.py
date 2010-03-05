@@ -10,6 +10,13 @@ from rson.tokenizer import Tokenizer
 from rson.unquoted import UnquotedToken
 from rson.doublequoted import QuotedToken
 
+class EasyDict(dict):
+    ''' A dictionary class with easy attribute access in many cases.
+    '''
+    def __init__(self, source):
+        self.__dict__ = self
+        self.update(source)
+
 class EJsonParser(object):
     ''' Enhanced JSON parser
 
@@ -43,10 +50,10 @@ class EJsonParser(object):
 
 
         if object_pairs_hook is None:
-            mydict = dict
             if object_hook is None:
-                object_pairs_hook = mydict
+                object_pairs_hook = EasyDict
             else:
+                mydict = dict
                 object_pairs_hook = lambda x: object_hook(mydict(x))
 
         def bad_array_element(token, next):
