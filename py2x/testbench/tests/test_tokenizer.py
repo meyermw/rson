@@ -42,7 +42,7 @@ class TestTokenizer(TestCase):
         linenum = 0
         for token in reversed(tokens):
             #print token, offset
-            toffset, t0, ttext, whitespace, tindentation, tlinenum, client = token
+            toffset, t0, ttext, whitespace, tindentation, tlinenum, backref = token
             newline = linenum != tlinenum
             if newline:
                 check(tlinenum > linenum, 'Invalid line number')
@@ -57,7 +57,7 @@ class TestTokenizer(TestCase):
                 result.append(indentation)
 
             check(toffset == offset, 'Expected offset %s', offset)
-            check(client is self, 'Unexpected client')
+            check(backref is tokens, 'Unexpected backref')
             check(tindentation is indentation or t0 == '@', 'Unexpected indentation')
             combined = ttext + whitespace
             result.append(combined)

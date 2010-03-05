@@ -30,7 +30,7 @@ class Tokenizer(list):
            [4] Indentation value of line containing token
                             (\n followed by 0 or more spaces)
            [5] Line number of token
-           [6] Object that the token belongs to (for error reporting)
+           [6] Tokenizer object that the token belongs to (for error reporting)
     '''
 
     # Like Python, indentation is special.  I originally planned on making
@@ -44,7 +44,7 @@ class Tokenizer(list):
     # Could also have an embedded comment
     indentation = r'\n[ \t\v\f\v]*(?:#.*)?'
 
-    # JSON-syntax delimiters are tokenized separately from everything else.
+    # RSON syntax delimiters are tokenized separately from everything else.
     delimiterset = set(' { } [ ] / : = , '.split())
 
     # Create a RE pattern for the delimiters
@@ -88,6 +88,7 @@ class Tokenizer(list):
 
         def newstring(source, client):
             self = cls()
+            self.client = client
 
             # Deal with 8 bit bytes for now
             if isinstance(source, unicode):
@@ -114,7 +115,7 @@ class Tokenizer(list):
                 while len(sourcelist) > i and not sourcelist[i].startswith('\n'):
                     i += 1
                     offset -= len(next())
-                    
+
             # Create all the tokens
             for token in sourceiter:
                 whitespace = next()
@@ -122,7 +123,7 @@ class Tokenizer(list):
                 if t0 != '\n':
                     if t0 not in delimiterset:
                         t0 = 'X'
-                    append((offset, t0, token, whitespace, indentation, linenum, client))
+                    append((offset, t0, token, whitespace, indentation, linenum, self))
                     offset -= len(token) + len(whitespace)
                 else:
                     linenum += 1
@@ -131,7 +132,7 @@ class Tokenizer(list):
                     linestart = offset
 
             # Add a sentinel
-            append((offset, '@', '@', '', '', linenum, client))
+            append((offset, '@', '@', '', '', linenum, self))
 
             # Put everything we need in the actual object instantiation
             self.reverse()
@@ -154,7 +155,7 @@ class Tokenizer(list):
         lineno = token[5]
         colno = offset = -token[0]
         if lineno != 1:
-            colno -= token[-1].tokens.source.rfind('\n', offset)
+            colno -= token[-1].source.rfind('\n', offset)
         if token[1] == '@':
             loc = 'at end of string'
         else:
