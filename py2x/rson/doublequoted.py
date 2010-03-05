@@ -19,7 +19,6 @@ class QuotedToken(object):
     makechr = unichr
     join = u''.join
     cachestrings = False
-    triplequoted = None
 
     splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|")').split
     mapper = { '\\\\' : u'\\',
@@ -46,7 +45,10 @@ class QuotedToken(object):
         def badstring(token, special):
             if token[2] != '"""' or triplequoted is None:
                 token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
-            return triplequoted(token)
+            result = makestr(triplequoted(token))
+            if cachestrings:
+                result = token[-1].stringcache(result, result)
+            return result
 
         def parse(token, next):
             s = token[2]
@@ -98,3 +100,23 @@ class QuotedToken(object):
             token[-1].error('Invalid second ch in double sequence: %s' % repr(nonmatch), token)
 
         return parse
+
+    @staticmethod
+    def triplequoted(token):
+        tokens = token[-1]
+        source = tokens.source
+        result = []
+        start = 3 - token[0]
+        while 1:
+            end = source.find('"""', start)
+            if end < 0:
+                tokens.error('Did not find end for triple-quoted string', token)
+            if source[end-1] != '\\':
+                break
+            result.append(source[start:end-1])
+            result.append('"""')
+            start = end + 3
+        result.append(source[start:end])
+        offset = bisect.bisect(tokens, (- end -2, ))
+        tokens[offset:] = []
+        return ''.join(result)
