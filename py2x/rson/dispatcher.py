@@ -24,10 +24,13 @@ class Dispatcher(object):
             if not kw:
                 return default_loads(s)
 
-            key = kw and tuple(sorted(kw.iteritems()))
+            key = tuple(sorted(kw.iteritems()))
             func = cached(key)
             if func is None:
-                self.__dict__ = dict((x,y) for (x,y) in kw.iteritems() if y is not None)
+                # Begin some real ugliness here -- just modify our instance to
+                # have the correct user variables for the initialization functions.
+                # Seems to speed up simplejson testcases a bit.
+                self.__dict__ = dict((x,y) for (x,y) in key if y is not None)
                 func = parsercache[key] = parser_factory()
 
             return func(s)
