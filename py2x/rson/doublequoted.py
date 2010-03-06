@@ -31,7 +31,7 @@ class QuotedToken(object):
                r'\t' : u'\t'}.get
 
     @classmethod
-    def factory(cls, int=int, iter=iter, len=len):
+    def quoted_parse_factory(cls, int=int, iter=iter, len=len):
         quoted_splitter = cls.quoted_splitter
         quoted_mapper = cls.quoted_mapper
         parse_quoted_str = cls.parse_quoted_str

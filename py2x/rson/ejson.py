@@ -43,8 +43,8 @@ class EJsonParser(object):
         tokenizer = Tokenizer.factory()
         error = Tokenizer.error
 
-        read_unquoted = cls.UnquotedToken.factory()
-        read_quoted = cls.QuotedToken.factory()
+        read_unquoted = cls.UnquotedToken.unquoted_parse_factory()
+        read_quoted = cls.QuotedToken.quoted_parse_factory()
         object_hook, object_pairs_hook = cls.object_hooks
         allow_trailing_commas = cls.allow_trailing_commas
 
@@ -167,7 +167,7 @@ class EJsonParser(object):
                     closing = ']}'[t1 in ':=']
                     error('Unexpected %s before this' % closing, next())
             return value
-                
+
 
         return parse
 

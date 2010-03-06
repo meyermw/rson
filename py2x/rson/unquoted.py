@@ -56,7 +56,7 @@ class UnquotedToken(object):
     '''
 
     @classmethod
-    def factory(cls):
+    def unquoted_parse_factory(cls):
         unquoted_match = re.compile(cls.unquoted_pattern,
                         re.VERBOSE).match
 

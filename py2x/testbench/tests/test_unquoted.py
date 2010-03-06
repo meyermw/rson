@@ -25,7 +25,7 @@ class TestUnquoted(TestCase):
         from rson.tokenizer import Tokenizer
         self.t = Tokenizer.factory()
         from rson.unquoted import UnquotedToken
-        self.u = UnquotedToken.factory()
+        self.u = UnquotedToken.unquoted_parse_factory()
 
     def test_simple(self):
         tests = ''' 0 0.0 false true null 1.2 -3.7e5 Hey there how ya doin? '''.replace(' ', '\n')
