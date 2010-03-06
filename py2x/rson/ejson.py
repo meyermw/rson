@@ -9,6 +9,7 @@ See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
 from rson.tokenizer import Tokenizer
 from rson.unquoted import UnquotedToken
 from rson.doublequoted import QuotedToken
+from rson.dispatcher import Dispatcher
 
 class EasyDict(dict):
     ''' A dictionary class with easy attribute access in many cases.
@@ -31,22 +32,22 @@ class EJsonParser(object):
     '''
 
     Tokenizer = Tokenizer
-
-    object_hooks = None, None
+    object_hook = None
+    object_pairs_hook = None
     allow_trailing_commas = True
 
-    @classmethod
-    def parser_factory(cls):
-        Tokenizer = cls.Tokenizer
+    def parser_factory(self):
+
+        Tokenizer = self.Tokenizer
         tokenizer = Tokenizer.factory()
         error = Tokenizer.error
 
-        read_unquoted = cls.unquoted_parse_factory()
-        read_quoted = cls.quoted_parse_factory()
-        object_hook, object_pairs_hook = cls.object_hooks
-        allow_trailing_commas = cls.allow_trailing_commas
+        read_unquoted = self.unquoted_parse_factory()
+        read_quoted = self.quoted_parse_factory()
+        allow_trailing_commas = self.allow_trailing_commas
 
-
+        object_hook = self.object_hook
+        object_pairs_hook = self.object_pairs_hook
         if object_pairs_hook is None:
             if object_hook is None:
                 object_pairs_hook = EasyDict
@@ -170,8 +171,7 @@ class EJsonParser(object):
         return parse
 
 
-class EJsonSystem(EJsonParser, UnquotedToken, QuotedToken):
+class EJsonSystem(EJsonParser, UnquotedToken, QuotedToken, Dispatcher):
     pass
 
-
-loads = EJsonSystem.parser_factory()
+loads = EJsonSystem.dispatcher_factory()

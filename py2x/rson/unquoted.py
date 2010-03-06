@@ -55,15 +55,14 @@ class UnquotedToken(object):
     )  \Z                               # Match end of string
     '''
 
-    @classmethod
-    def unquoted_parse_factory(cls):
-        unquoted_match = re.compile(cls.unquoted_pattern,
+    def unquoted_parse_factory(self):
+        unquoted_match = re.compile(self.unquoted_pattern,
                         re.VERBOSE).match
 
-        parse_unquoted_str = cls.parse_unquoted_str
-        parse_float = cls.parse_float
-        parse_int = cls.parse_int
-        special = cls.special_strings
+        parse_unquoted_str = self.parse_unquoted_str
+        parse_float = self.parse_float
+        parse_int = self.parse_int
+        special = self.special_strings
 
         def parse(token, next):
             s = token[2]

@@ -30,15 +30,14 @@ class QuotedToken(object):
                r'\r' : u'\r',
                r'\t' : u'\t'}.get
 
-    @classmethod
-    def quoted_parse_factory(cls, int=int, iter=iter, len=len):
-        quoted_splitter = cls.quoted_splitter
-        quoted_mapper = cls.quoted_mapper
-        parse_quoted_str = cls.parse_quoted_str
-        parse_encoded_chr = cls.parse_encoded_chr
-        parse_join_str = cls.parse_join_str
-        cachestrings = cls.cachestrings
-        triplequoted = cls.triplequoted
+    def quoted_parse_factory(self, int=int, iter=iter, len=len):
+        quoted_splitter = self.quoted_splitter
+        quoted_mapper = self.quoted_mapper
+        parse_quoted_str = self.parse_quoted_str
+        parse_encoded_chr = self.parse_encoded_chr
+        parse_join_str = self.parse_join_str
+        cachestrings = self.cachestrings
+        triplequoted = self.triplequoted
 
         allow_double = sys.maxunicode > 65535
 

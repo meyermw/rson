@@ -1,0 +1,35 @@
+'''
+Parser dispatcher mix-in class.
+
+Copyright (c) 2010, Patrick Maupin.  All rights reserved.
+
+See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
+'''
+
+class Dispatcher(object):
+    ''' Assumes that this is mixed-in to a class with an
+        appropriate parser_factory() method.
+    '''
+
+    @classmethod
+    def dispatcher_factory(cls, hasattr=hasattr, tuple=tuple, sorted=sorted):
+
+        self = cls()
+        parser_factory = self.parser_factory
+        parsercache = {}
+        cached = parsercache.get
+        default_loads = parser_factory()
+
+        def loads(s, **kw):
+            if not kw:
+                return default_loads(s)
+
+            key = kw and tuple(sorted(kw.iteritems()))
+            func = cached(key)
+            if func is None:
+                self.__dict__ = dict((x,y) for (x,y) in kw.iteritems() if y is not None)
+                func = parsercache[key] = parser_factory()
+
+            return func(s)
+
+        return loads

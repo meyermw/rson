@@ -18,7 +18,7 @@ class TestQuoted(TestCase):
         from rson.tokenizer import Tokenizer
         self.t = Tokenizer.factory()
         from rson.doublequoted import QuotedToken
-        self.q = QuotedToken.quoted_parse_factory()
+        self.q = QuotedToken().quoted_parse_factory()
 
     def test_simple(self):
         tests = '''  "a" "" "abc" "abc\\n\\ndef"'''.replace(' ', '\n')
