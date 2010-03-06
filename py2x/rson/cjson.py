@@ -21,17 +21,17 @@ def _dispatch():
     cached = classcache.get
 
     def newclass(key, kw):
-        
+
         class MyUnquoted(CompatibleUnquotedToken):
-            makefloat = kw.pop('parse_float', None) or CompatibleUnquotedToken.makefloat
-            makeint = kw.pop('parse_int', None) or CompatibleUnquotedToken.makeint
-    
+            parse_float = kw.pop('parse_float', None) or CompatibleUnquotedToken.parse_float
+            parse_int = kw.pop('parse_int', None) or CompatibleUnquotedToken.parse_int
+
         class MyParser(EJsonParser):
             UnquotedToken = MyUnquoted
             QuotedToken = MyQuotedToken
             object_hooks = kw.pop('object_hook', None), kw.pop('object_pairs_hook', None)
             allow_trailing_commas = False
-    
+
         value = MyParser.factory()
         classcache[key] = value
         return value

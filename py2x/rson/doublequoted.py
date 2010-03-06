@@ -14,14 +14,14 @@ class QuotedToken(object):
     ''' Subclass or replace this if you don't like quoted string handling
     '''
 
-    makestr = staticmethod(
+    parse_quoted_str = staticmethod(
           lambda token, s, unicode=unicode: unicode(s, 'utf-8'))
-    makechr = unichr
-    join = u''.join
+    parse_encoded_chr = unichr
+    parse_join_str = u''.join
     cachestrings = False
 
-    splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|")').split
-    mapper = { '\\\\' : u'\\',
+    quoted_splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|")').split
+    quoted_mapper = { '\\\\' : u'\\',
                r'\"' : u'"',
                r'\/' : u'/',
                r'\b' : u'\b',
@@ -32,11 +32,11 @@ class QuotedToken(object):
 
     @classmethod
     def factory(cls, int=int, iter=iter, len=len):
-        splitter = cls.splitter
-        mapper = cls.mapper
-        makestr = cls.makestr
-        makechr = cls.makechr
-        join = cls.join
+        quoted_splitter = cls.quoted_splitter
+        quoted_mapper = cls.quoted_mapper
+        parse_quoted_str = cls.parse_quoted_str
+        parse_encoded_chr = cls.parse_encoded_chr
+        parse_join_str = cls.parse_join_str
         cachestrings = cls.cachestrings
         triplequoted = cls.triplequoted
 
@@ -45,7 +45,7 @@ class QuotedToken(object):
         def badstring(token, special):
             if token[2] != '"""' or triplequoted is None:
                 token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
-            result = makestr(triplequoted(token))
+            result = parse_quoted_str(triplequoted(token))
             if cachestrings:
                 result = token[-1].stringcache(result, result)
             return result
@@ -54,8 +54,8 @@ class QuotedToken(object):
             s = token[2]
             if len(s) < 2 or not (s[0] == s[-1] == '"'):
                 token[-1].error('No end quote on string', token)
-            s = splitter(s[1:-1])
-            result = makestr(token, s[0])
+            s = quoted_splitter(s[1:-1])
+            result = parse_quoted_str(token, s[0])
             if len(s) > 1:
                 result = [result]
                 append = result.append
@@ -64,25 +64,25 @@ class QuotedToken(object):
                 next()
                 for special in s:
                     nonmatch = next()
-                    remap = mapper(special)
+                    remap = quoted_mapper(special)
                     if remap is None:
                         if len(special) == 6:
                             uni = int(special[2:], 16)
                             if 0xd800 <= uni <= 0xdbff and allow_double:
-                                uni, nonmatch = parse_double(uni, nonmatch, next, token)
-                            remap = makechr(uni)
+                                uni, nonmatch = parse_double_unicode(uni, nonmatch, next, token)
+                            remap = parse_encoded_chr(uni)
                         else:
                             return badstring(token, special)
                     append(remap)
-                    append(makestr(token, nonmatch))
+                    append(parse_quoted_str(token, nonmatch))
 
-                result = join(result)
+                result = parse_join_str(result)
             if cachestrings:
                 result = token[-1].stringcache(result, result)
             return result
 
 
-        def parse_double(uni, nonmatch, next, token):
+        def parse_double_unicode(uni, nonmatch, next, token):
             ''' Munged version of UCS-4 code pair stuff from
                 simplejson.
             '''

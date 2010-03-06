@@ -24,10 +24,10 @@ class UnquotedToken(object):
             but not both sides
     '''
 
-    makeint = staticmethod(
+    parse_int = staticmethod(
         lambda s: int(s.replace('_', ''), 0))
-    makefloat = float
-    makestr = staticmethod(
+    parse_float = float
+    parse_unquoted_str = staticmethod(
         lambda token, unicode=unicode: unicode(token[2], 'utf-8'))
 
     special_strings = dict(true = True, false = False, null = None)
@@ -60,21 +60,21 @@ class UnquotedToken(object):
         unquoted_match = re.compile(cls.unquoted_pattern,
                         re.VERBOSE).match
 
-        makestr = cls.makestr
-        makefloat = cls.makefloat
-        makeint = cls.makeint
+        parse_unquoted_str = cls.parse_unquoted_str
+        parse_float = cls.parse_float
+        parse_int = cls.parse_int
         special = cls.special_strings
 
         def parse(token, next):
             s = token[2]
             m = unquoted_match(s)
             if m is None:
-                return makestr(token)
+                return parse_unquoted_str(token)
             if m.group('num') is None:
                 return special[s]
             if m.group('float') is None:
-                return makeint(s.replace('_', ''))
-            return makefloat(s)
+                return parse_int(s.replace('_', ''))
+            return parse_float(s)
 
         return parse
 
@@ -85,10 +85,10 @@ class StrictUnquotedToken(UnquotedToken):
         diagram at json.org
     '''
 
-    makeint = lambda s: int(s, 0)
+    parse_int = lambda s: int(s, 0)
 
     @staticmethod
-    def makestr(token):
+    def parse_unquoted_str(token):
         token[-1].error('Invalid literal', token)
 
 
