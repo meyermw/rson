@@ -11,9 +11,6 @@ from rson.ejson import EJsonParser
 from rson.unquoted import CompatibleUnquotedToken
 from rson.doublequoted import QuotedToken
 
-class MyQuotedToken(QuotedToken):
-    cachestrings = True
-
 def _dispatch():
 
     classcache = {}
@@ -22,17 +19,14 @@ def _dispatch():
 
     def newclass(key, kw):
 
-        class MyUnquoted(CompatibleUnquotedToken):
+        class MyParser(EJsonParser, CompatibleUnquotedToken, QuotedToken):
+            cachestrings = True
+            allow_trailing_commas = False
             parse_float = kw.pop('parse_float', None) or CompatibleUnquotedToken.parse_float
             parse_int = kw.pop('parse_int', None) or CompatibleUnquotedToken.parse_int
-
-        class MyParser(EJsonParser):
-            UnquotedToken = MyUnquoted
-            QuotedToken = MyQuotedToken
             object_hooks = kw.pop('object_hook', None), kw.pop('object_pairs_hook', None)
-            allow_trailing_commas = False
 
-        value = MyParser.factory()
+        value = MyParser.parser_factory()
         classcache[key] = value
         return value
 

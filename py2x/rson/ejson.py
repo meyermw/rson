@@ -31,20 +31,18 @@ class EJsonParser(object):
     '''
 
     Tokenizer = Tokenizer
-    UnquotedToken = UnquotedToken
-    QuotedToken = QuotedToken
 
     object_hooks = None, None
     allow_trailing_commas = True
 
     @classmethod
-    def factory(cls):
+    def parser_factory(cls):
         Tokenizer = cls.Tokenizer
         tokenizer = Tokenizer.factory()
         error = Tokenizer.error
 
-        read_unquoted = cls.UnquotedToken.unquoted_parse_factory()
-        read_quoted = cls.QuotedToken.quoted_parse_factory()
+        read_unquoted = cls.unquoted_parse_factory()
+        read_quoted = cls.quoted_parse_factory()
         object_hook, object_pairs_hook = cls.object_hooks
         allow_trailing_commas = cls.allow_trailing_commas
 
@@ -172,4 +170,8 @@ class EJsonParser(object):
         return parse
 
 
-loads = EJsonParser.factory()
+class EJsonSystem(EJsonParser, UnquotedToken, QuotedToken):
+    pass
+
+
+loads = EJsonSystem.parser_factory()
