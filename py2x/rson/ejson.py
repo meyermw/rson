@@ -34,6 +34,7 @@ class EJsonParser(object):
     Tokenizer = Tokenizer
     object_hook = None
     object_pairs_hook = None
+    _default_object_class = EasyDict
     allow_trailing_commas = True
 
     def parser_factory(self):
@@ -50,7 +51,7 @@ class EJsonParser(object):
         object_pairs_hook = self.object_pairs_hook
         if object_pairs_hook is None:
             if object_hook is None:
-                object_pairs_hook = EasyDict
+                object_pairs_hook = self._default_object_class
             else:
                 mydict = dict
                 object_pairs_hook = lambda x: object_hook(mydict(x))

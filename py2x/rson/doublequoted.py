@@ -9,6 +9,7 @@ See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
 
 import sys
 import re
+import bisect
 
 class QuotedToken(object):
     ''' Subclass or replace this if you don't like quoted string handling
@@ -44,7 +45,7 @@ class QuotedToken(object):
         def badstring(token, special):
             if token[2] != '"""' or triplequoted is None:
                 token[-1].error('Invalid character in quoted string: %s' % repr(special), token)
-            result = parse_quoted_str(triplequoted(token))
+            result = parse_quoted_str(token, triplequoted(token))
             if cachestrings:
                 result = token[-1].stringcache(result, result)
             return result
