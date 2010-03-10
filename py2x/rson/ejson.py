@@ -36,12 +36,17 @@ class EJsonParser(object):
     object_pairs_hook = None
     _default_object_class = EasyDict
     allow_trailing_commas = True
+    use_decimal = False
 
     def parser_factory(self):
 
         Tokenizer = self.Tokenizer
         tokenizer = Tokenizer.factory()
         error = Tokenizer.error
+
+        if self.use_decimal:
+            from decimal import Decimal
+            self.parse_float = Decimal
 
         read_unquoted = self.unquoted_parse_factory()
         read_quoted = self.quoted_parse_factory()
