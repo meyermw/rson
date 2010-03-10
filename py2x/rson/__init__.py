@@ -45,3 +45,15 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
  '''
+
+from rson.tokenizer import Tokenizer, RSONDecodeError
+from rson.unquoted import UnquotedToken
+from rson.doublequoted import QuotedToken
+from rson.dispatcher import Dispatcher
+from rson.mergedict import MergeDict
+from rson.parser import RsonParser
+
+class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
+    Tokenizer = Tokenizer
+
+loads = RsonSystem.dispatcher_factory()
