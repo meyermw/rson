@@ -86,7 +86,7 @@ class EJsonParser(object):
                 append(value_dispatch(t0,  bad_array_element)(token, next))
                 delim = next()
                 t0 = delim[1]
-                if t0 in ',;':
+                if t0 == ',':
                     continue
 
                 # Allow line ending to be used as a comma, so
@@ -126,7 +126,7 @@ class EJsonParser(object):
                 append((key, value))
                 delim = next()
                 t0 = delim[1]
-                if t0 in ',;':
+                if t0 == ',':
                     continue
 
                 # Allow line ending to be used as a comma, so

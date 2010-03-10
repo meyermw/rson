@@ -45,7 +45,7 @@ class Tokenizer(list):
     indentation = r'\n[ \t\v\f\v]*(?:#.*)?'
 
     # RSON syntax delimiters are tokenized separately from everything else.
-    delimiterset = set(' { } [ ] / : = , '.split())
+    delimiterset = set(' { } [ ] : = , '.split())
 
     re_delimiterset = ''.join(delimiterset).replace(']', r'\]')
 
@@ -72,11 +72,11 @@ class Tokenizer(list):
     other = r'[\S](?:[^%s\n]*[^%s\s])*' % (re_delimiterset, re_delimiterset)
 
     pattern = '(%s)' % '|'.join([
-      indentation,
       delimiter_pattern,
       triple_quoted_string,
       quoted_string,
-      other
+      other,
+      indentation,
     ])
 
     splitter = re.compile(pattern).split
@@ -126,13 +126,12 @@ class Tokenizer(list):
                 whitespace = next()
                 t0 = token[0]
                 if t0 not in delimiterset:
-                    if t0 in '\n;':
-                        if t0 == '\n':
-                            linenum += 1
-                            indentation = token
-                            offset -= len(token)
-                            linestart = offset
-                            continue
+                    if t0 == '\n':
+                        linenum += 1
+                        indentation = token
+                        offset -= len(token)
+                        linestart = offset
+                        continue
                     else:
                         t0 = 'X'
                 self[index] = (offset, t0, token, whitespace, indentation, linenum, self)
