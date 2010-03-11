@@ -17,7 +17,7 @@ Additional documentation available at:
 http://code.google.com/p/rson/
 '''
 
-__version__ = '0.1.00'
+__version__ = '00.01.00'
 
 __author__ = 'Patrick Maupin <pmaupin@gmail.com>'
 
@@ -46,14 +46,20 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
  OTHER DEALINGS IN THE SOFTWARE.
  '''
 
-from rson.tokenizer import Tokenizer, RSONDecodeError
-from rson.unquoted import UnquotedToken
-from rson.doublequoted import QuotedToken
-from rson.dispatcher import Dispatcher
-from rson.mergedict import MergeDict
-from rson.parser import RsonParser
+# RSON is developed using multiple modules, but released as a single module
 
-class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
-    Tokenizer = Tokenizer
+try:
+    from rson.rson_single import *
+    print '\n*** Using single file version of RSON ***\n'
+except:
+    from rson.tokenizer import Tokenizer, RSONDecodeError
+    from rson.unquoted import UnquotedToken
+    from rson.doublequoted import QuotedToken
+    from rson.dispatcher import Dispatcher
+    from rson.mergedict import MergeDict
+    from rson.parser import RsonParser
 
-loads = RsonSystem.dispatcher_factory()
+    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
+        Tokenizer = Tokenizer
+
+    loads = RsonSystem.dispatcher_factory()
