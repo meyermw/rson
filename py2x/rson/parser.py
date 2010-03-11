@@ -162,8 +162,8 @@ class RsonParser(object):
                 tok1 = next()
                 thisindent, newlinenum = tok1[4:6]
                 if newlinenum == linenum:
-                    value, token = rson_value_dispatch(tok1[1], bad_top_value)(tok1, next)
-                    ttype = token[1]
+                    value = rson_value_dispatch(tok1[1], bad_top_value)(tok1, next)
+                    token = next()
                     entry.append(value)
                     continue
                 if thisindent <= arrayindent:
@@ -175,14 +175,16 @@ class RsonParser(object):
 
             thisindent, newlinenum = token[4:6]
             if newlinenum == linenum and token[1] == '=':
-                value, token = rson_value_dispatch(token[1], bad_top_value)(token, next)
+                value = rson_value_dispatch(token[1], bad_top_value)(token, next)
+                entry.append(value)
+                token = next()
             elif thisindent > arrayindent:
                 stack.append(token)
                 value, token = parse_recurse(stack, next)
+                entry.append(value)
                 stack.pop()
-            else:
+            elif len(entry) < 2:
                 error('Expected ":" or "=", or indented line', token)
-            entry.append(value)
             return entry, token
 
         def parse_recurse_dict(stack, next, token, result):
@@ -191,7 +193,7 @@ class RsonParser(object):
                 thisindent = token[4]
                 if thisindent != arrayindent:
                     if thisindent < arrayindent:
-                        return object_pairs_hook(result)
+                        return object_pairs_hook(result), token
                     bad_unindent(token, next)
                 key = json_value_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token

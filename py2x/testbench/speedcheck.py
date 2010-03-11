@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, '..')
 sys.path.insert(0, 'simplejson')
 
-from rson.ejson import loads
+from rson import loads
 #from simplejson import loads
 #from json import loads
 

@@ -5,7 +5,7 @@ def all_tests_suite():
         'tests.test_tokenizer',
         'tests.test_unquoted',
         'tests.test_quoted',
-        'tests.test_ejson',
+        'tests.test_parser',
     ])
 
     return unittest.TestSuite(suite)

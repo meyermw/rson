@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, '..')
 
 from json import loads as sysloads
-from rson.ejson import loads as newloads
+from rson import loads as newloads
 
 strings = [open(os.path.join('styles', x), 'rb').read() for x in os.listdir('styles') if x.endswith('json')]
 

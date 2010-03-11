@@ -1,12 +1,12 @@
 from unittest import TestCase
 import os
 from json import loads as sysloads
-from rson.ejson import loads as newloads, EasyDict
+from rson import loads as newloads
 
 
-class TestEJson(TestCase):
+class TestParser(TestCase):
 
-    def test_ejson(self):
+    def test_parser(self):
         sourcedir = os.path.join(os.path.dirname(__file__), '..', 'styles')
         strings = [open(os.path.join(sourcedir, x), 'rb').read() for x in os.listdir('styles') if x.endswith('json')]
 
@@ -14,7 +14,8 @@ class TestEJson(TestCase):
             self.assert_(sysloads(s) == newloads(s))
 
     def test_python_syntax(self):
-        ''' Test a limited subset of Python syntax.
+        ''' Test a limited subset of Python syntax,
+            after modifying "=" to be ":".
             Also, this is probably the easiest way to
             test triple quote processing.
         '''
@@ -50,4 +51,4 @@ num7 = .2
         exec teststr in testdict
         del testdict['__builtins__']
 
-        self.assertEquals(testdict, newloads(teststr))
+        self.assertEquals(testdict, newloads(teststr.replace('=', ':')))
