@@ -42,7 +42,7 @@ class Tokenizer(list):
     # An indentation is always the preceding EOL plus optional spaces,
     # so we create a dummy EOL for the very start of the string.
     # Could also have an embedded comment
-    indentation = r'\n[ \t\v\f\v]*(?:#.*)?'
+    indentation = r'\n[ \t\v\f]*(?:#.*)?'
 
     # RSON syntax delimiters are tokenized separately from everything else.
     delimiterset = set(' { } [ ] : = , '.split())

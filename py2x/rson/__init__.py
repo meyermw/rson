@@ -1,6 +1,11 @@
 
 ################################################################################
-####  NOTE:  THIS IS STILL IN DEVELOPMENT -- NOT A WORKING PACKAGE YET!!!   ####
+####  NOTE:  THIS IS STILL IN DEVELOPMENT:                                  ####
+####                                                                        ####
+####    - No encoder                                                        ####
+####    - = not yet implemented                                             ####
+####    - Needs more tests!                                                 ####
+####                                                                        ####
 ################################################################################
 
 '''
