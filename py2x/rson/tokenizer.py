@@ -157,13 +157,21 @@ class Tokenizer(list):
         return self[-1 - index]
 
     @staticmethod
-    def error(s, token):
-        ''' error performs generic error reporting for tokens
+    def sourceloc(token):
+        ''' Return the source location for a given token
         '''
         lineno = token[5]
-        colno = offset = -token[0]
+        colno = offset = -token[0] + 1
         if lineno != 1:
-            colno -= token[-1].source.rfind('\n', 0, offset)
+            colno -= token[-1].source.rfind('\n', 0, offset) + 1
+        return offset, lineno, colno
+
+    @classmethod
+    def error(cls, s, token):
+        ''' error performs generic error reporting for tokens
+        '''
+        offset, lineno, colno = cls.sourceloc(token)
+
         if token[1] == '@':
             loc = 'at end of string'
         else:
@@ -175,4 +183,3 @@ class Tokenizer(list):
         err.lineno = lineno
         err.colno = colno
         raise err
-

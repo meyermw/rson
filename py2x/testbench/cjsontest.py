@@ -10,6 +10,15 @@ import simplejson.tests
 
 from rson import RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict, Tokenizer, RSONDecodeError
 
+# For some reason, the only test that simplejson does on actual file location
+# uses a different location than we do...
+
+oldloc = Tokenizer.sourceloc
+def sourceloc(token):
+    offset, lineno, colno = oldloc(token)
+    return offset-1, lineno, colno-1
+Tokenizer.sourceloc = staticmethod(sourceloc)
+
 class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
     ''' Compatible JSON-only token syntax,
         tries to work same as simplejson
