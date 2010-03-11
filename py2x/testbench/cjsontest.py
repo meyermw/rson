@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import re
 import cProfile
 
 sys.path[0:0] = '..', 'simplejson'
@@ -8,7 +9,7 @@ sys.path[0:0] = '..', 'simplejson'
 import simplejson
 import simplejson.tests
 
-from rson import RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict, Tokenizer, RSONDecodeError
+from rson import RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects, Tokenizer, RSONDecodeError
 
 # For some reason, the only test that simplejson does on actual file location
 # uses a different location than we do...
@@ -19,7 +20,7 @@ def sourceloc(token):
     return offset-1, lineno, colno-1
 Tokenizer.sourceloc = staticmethod(sourceloc)
 
-class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
+class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects):
     ''' Compatible JSON-only token syntax,
         tries to work same as simplejson
     '''
@@ -53,6 +54,7 @@ class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict)
     for x in 'Infinity NaN'.split():
         special_strings[x] = float(x)
 
+    quoted_splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|"|[\x1f])').split
 
 simplejson.loads = CJsonSystem.dispatcher_factory()
 simplejson.JSONDecodeError = RSONDecodeError

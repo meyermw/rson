@@ -15,6 +15,7 @@ class RsonParser(object):
     object_pairs_hook = None
     allow_trailing_commas = True
     use_decimal = False
+    array_hook = list
 
     def parser_factory(self):
 
@@ -39,6 +40,8 @@ class RsonParser(object):
                 mydict = dict
                 object_pairs_hook = lambda x: object_hook(mydict(x))
 
+        array_hook = self.array_hook
+
         def bad_array_element(token, next):
             error('Expected array element', token)
 
@@ -58,7 +61,7 @@ class RsonParser(object):
             error('Unexpected indentation', token)
 
         def read_json_array(firsttok, next):
-            result = []
+            result = array_hook()
             append = result.append
             while 1:
                 token = next()
@@ -123,7 +126,9 @@ class RsonParser(object):
                                    '=': parse_equals}.get
 
 
-        empties = [], {}
+        empty_object = object_pairs_hook([])
+        empty_array = array_hook()
+        empties = empty_object, empty_array
 
         def parse_recurse_array(stack, next, token, result):
             arrayindent, linenum = stack[-1][4:6]
@@ -135,9 +140,9 @@ class RsonParser(object):
                     if result:
                         stack.append(token)
                         lastitem = result[-1]
-                        if lastitem == []:
+                        if lastitem == empty_array:
                             result[-1], token = parse_recurse_array(stack, next, token, lastitem)
-                        elif lastitem == {}:
+                        elif lastitem == empty_object:
                             result[-1], token = parse_recurse_dict(stack, next, token, [])
                         else:
                             result = None
@@ -210,7 +215,7 @@ class RsonParser(object):
         def parse_recurse(stack, next):
             firsttok = stack[-1]
             if firsttok[1] == '=':
-                value, token = parse_recurse_array(stack, next, firsttok, [])
+                value, token = parse_recurse_array(stack, next, firsttok, array_hook())
                 if len(value) == 1:
                     value = value[0]
                 return value, token
@@ -219,7 +224,7 @@ class RsonParser(object):
             token = next()
             ttype = token[1]
             if ttype not in ':=@':
-                return parse_recurse_array(stack, next, token, [value])
+                return parse_recurse_array(stack, next, token, array_hook([value]))
             if ttype == '@':
                 return value, token
 

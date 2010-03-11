@@ -56,10 +56,10 @@ except:
     from rson.unquoted import UnquotedToken
     from rson.doublequoted import QuotedToken
     from rson.dispatcher import Dispatcher
-    from rson.mergedict import MergeDict
+    from rson.baseobjects import BaseObjects
     from rson.parser import RsonParser
 
-    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, MergeDict):
+    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects):
         Tokenizer = Tokenizer
 
     loads = RsonSystem.dispatcher_factory()
