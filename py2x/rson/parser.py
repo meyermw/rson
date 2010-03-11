@@ -213,24 +213,27 @@ class RsonParser(object):
                 result.append(entry)
 
         def parse_recurse(stack, next):
+            ''' parse_recurse ALWAYS returns a list or a dict.
+                (or the user variants thereof)
+                It is up to the caller to determine that it was an array
+                of length 1 and strip the contents out of the array.
+            '''
             firsttok = stack[-1]
             if firsttok[1] == '=':
-                value, token = parse_recurse_array(stack, next, firsttok, array_hook())
-                if len(value) == 1:
-                    value = value[0]
-                return value, token
+                return parse_recurse_array(stack, next, firsttok, array_hook())
 
             value = json_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
             token = next()
             ttype = token[1]
-            if ttype not in ':=@':
+            if ttype not in ':=':
                 return parse_recurse_array(stack, next, token, array_hook([value]))
-            if ttype == '@':
-                return value, token
 
             entry, token = parse_one_dict_entry(stack, next, token, [value])
             return parse_recurse_dict(stack, next, token, [entry])
 
+
+        myisinstance = isinstance
+        mylist = list
 
         def parse(source):
             tokens = tokenizer(source, None)
@@ -239,6 +242,8 @@ class RsonParser(object):
             value, token = parse_recurse([next()], next)
             if token[1] != '@':
                 error('Unexpected additional data', token)
+            if len(value) == 1 and myisinstance(value, list):
+                value = value[0]
             return value
 
         return parse

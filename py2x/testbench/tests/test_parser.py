@@ -52,3 +52,7 @@ num7 = .2
         del testdict['__builtins__']
 
         self.assertEquals(testdict, newloads(teststr.replace('=', ':')))
+
+
+    def test_various(self):
+        self.assertEquals(newloads('a:[]\n x'), {'a':['x']})
