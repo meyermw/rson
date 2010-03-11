@@ -123,6 +123,7 @@ class RsonParser(object):
                                    '=': parse_equals}.get
 
 
+        empties = [], {}
 
         def parse_recurse_array(stack, next, token, result):
             arrayindent, linenum = stack[-1][4:6]
@@ -181,7 +182,13 @@ class RsonParser(object):
             elif thisindent > arrayindent:
                 stack.append(token)
                 value, token = parse_recurse(stack, next)
-                entry.append(value)
+                if entry[-1] in empties:
+                    if type(entry[-1]) == type(value):
+                        entry[-1] = value
+                    else:
+                        error('Cannot load %s into %s' % (type(value), type(entry[-1])), stack[-1])
+                else:
+                    entry.append(value)
                 stack.pop()
             elif len(entry) < 2:
                 error('Expected ":" or "=", or indented line', token)

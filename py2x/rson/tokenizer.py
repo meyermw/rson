@@ -163,12 +163,12 @@ class Tokenizer(list):
         lineno = token[5]
         colno = offset = -token[0]
         if lineno != 1:
-            colno -= token[-1].source.rfind('\n', offset)
+            colno -= token[-1].source.rfind('\n', 0, offset)
         if token[1] == '@':
             loc = 'at end of string'
         else:
             text = token[2]
-            loc = 'line %s, column %s, text %s' % (lineno, offset, repr(text[:20]))
+            loc = 'line %s, column %s, text %s' % (lineno, colno, repr(text[:20]))
 
         err = RSONDecodeError('%s: %s' % (s, loc))
         err.pos = offset

@@ -14,3 +14,12 @@ expected = [sysloads(x) for x in strings]
 actual = [newloads(x) for x in strings]
 
 print expected == actual
+
+result = []
+for fname in 'styles/styles.json styles.rson'.split():
+    text = open(fname, 'rb').read()
+    data = newloads(text)
+    data['styles'] = dict(data['styles'])
+    result.append(data)
+
+print result[0] == result[1]

@@ -17,6 +17,9 @@ class MergeDict(object):
         class EasyDict(dict):
             ''' A dictionary class with easy attribute access in many cases.
             '''
+            def __getattr__(self, name):
+                self.__dict__ = self
+                return self[name]
 
         def merge(source):
             result = EasyDict()
