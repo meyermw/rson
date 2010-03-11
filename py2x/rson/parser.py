@@ -13,6 +13,7 @@ class RsonParser(object):
 
     object_hook = None
     object_pairs_hook = None
+    object_pairs_expects_tuple = False
     allow_trailing_commas = True
     use_decimal = False
     array_hook = list
@@ -39,6 +40,10 @@ class RsonParser(object):
             else:
                 mydict = dict
                 object_pairs_hook = lambda x: object_hook(mydict(x))
+        elif self.object_pairs_expects_tuple:
+            real_object_pairs_hook = object_pairs_hook
+            def object_pairs_hook(what):
+                return real_object_pairs_hook([tuple(x) for x in what])
 
         array_hook = self.array_hook
 
@@ -92,7 +97,7 @@ class RsonParser(object):
                     if result and not allow_trailing_commas:
                         error('Unexpected trailing comma', token)
                     break
-                key = json_key_dispatch(t0, bad_dict_key)(token, next)
+                key = json_value_dispatch(t0, bad_dict_key)(token, next)
                 token = next()
                 t0 = token[1]
                 if t0 != ':':
@@ -100,7 +105,7 @@ class RsonParser(object):
                 token = next()
                 t0 = token[1]
                 value = json_value_dispatch(t0, bad_dict_value)(token, next)
-                append((key, value))
+                append([key, value])
                 delim = next()
                 t0 = delim[1]
                 if t0 == ',':
@@ -114,8 +119,6 @@ class RsonParser(object):
 
         def parse_equals(token, next):
             error('Equals processing not implemented yet', token)
-
-        json_key_dispatch = {'X':read_unquoted,  '"':read_quoted}.get
 
         json_value_dispatch = {'X':read_unquoted, '[':read_json_array,
                                '{': read_json_dict, '"':read_quoted}.get

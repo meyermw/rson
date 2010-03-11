@@ -56,3 +56,5 @@ num7 = .2
 
     def test_various(self):
         self.assertEquals(newloads('a:[]\n x'), {'a':['x']})
+        self.assertEquals(newloads('[a,b]:[c,d]'), {('a','b'):['c', 'd']})
+        self.assertEquals(newloads('{[a,b]:[1,2,3], 0:1}:[c,d]'), {((0, 1), (('a', 'b'), (1, 2, 3)),):['c', 'd']})
