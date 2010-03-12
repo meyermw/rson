@@ -139,7 +139,7 @@ class Tokenizer(list):
                 offset -= len(token) + len(whitespace)
 
             # Add a sentinel
-            self[index] = (offset, '@', '@', '', '', linenum, self)
+            self[index] = (offset, '@', '@', '', '', linenum + 1, self)
             self[index+1:] = []
 
             # Put everything we need in the actual object instantiation

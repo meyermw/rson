@@ -18,7 +18,7 @@ class RsonParser(object):
     use_decimal = False
     array_hook = list
 
-    def parser_factory(self):
+    def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list):
 
         Tokenizer = self.Tokenizer
         tokenizer = Tokenizer.factory()
@@ -131,6 +131,7 @@ class RsonParser(object):
 
         empty_object = object_pairs_hook([])
         empty_array = array_hook()
+        empty_array_type = type(empty_array)
         empties = empty_object, empty_array
 
         def parse_recurse_array(stack, next, token, result):
@@ -191,10 +192,12 @@ class RsonParser(object):
                 stack.append(token)
                 value, token = parse_recurse(stack, next)
                 if entry[-1] in empties:
-                    if type(entry[-1]) == type(value):
+                    if type(entry[-1]) is type(value):
                         entry[-1] = value
                     else:
                         error('Cannot load %s into %s' % (type(value), type(entry[-1])), stack[-1])
+                elif len(value) == 1 and type(value) is empty_array_type:
+                    entry.extend(value)
                 else:
                     entry.append(value)
                 stack.pop()
@@ -227,16 +230,19 @@ class RsonParser(object):
 
             value = json_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
             token = next()
-            ttype = token[1]
-            if ttype not in ':=':
+
+            # We return an array if the next value is on a new line and either
+            # is at the same indentation, or the current value is an empty list
+
+            if (token[5] != firsttok[5] and
+                    (token[4] <= firsttok[4] or
+                     value == empty_array)):
                 return parse_recurse_array(stack, next, token, array_hook([value]))
 
+            # Otherwise, return a dict
             entry, token = parse_one_dict_entry(stack, next, token, [value])
             return parse_recurse_dict(stack, next, token, [entry])
 
-
-        myisinstance = isinstance
-        mylist = list
 
         def parse(source):
             tokens = tokenizer(source, None)
@@ -245,7 +251,7 @@ class RsonParser(object):
             value, token = parse_recurse([next()], next)
             if token[1] != '@':
                 error('Unexpected additional data', token)
-            if len(value) == 1 and myisinstance(value, list):
+            if len(value) == 1 and isinstance(value, list):
                 value = value[0]
             return value
 

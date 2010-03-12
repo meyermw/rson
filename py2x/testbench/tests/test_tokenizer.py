@@ -43,6 +43,7 @@ class TestTokenizer(TestCase):
         for token in reversed(tokens):
             #print token, offset
             toffset, t0, ttext, whitespace, tindentation, tlinenum, backref = token
+            tlinenum -= t0 == '@'
             newline = linenum != tlinenum
             if newline:
                 check(tlinenum > linenum, 'Invalid line number')
