@@ -60,11 +60,12 @@ except:
     from rson.tokenizer import Tokenizer, RSONDecodeError
     from rson.unquoted import UnquotedToken
     from rson.doublequoted import QuotedToken
+    from rson.equals import EqualToken
     from rson.dispatcher import Dispatcher
     from rson.baseobjects import BaseObjects
     from rson.parser import RsonParser
 
-    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects):
+    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, EqualToken, Dispatcher, BaseObjects):
         Tokenizer = Tokenizer
 
     loads = RsonSystem.dispatcher_factory()

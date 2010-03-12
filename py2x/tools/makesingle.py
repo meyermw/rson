@@ -20,7 +20,7 @@ def split_init(s):
     bottom = '\n'.join(x[4:] for x in bottom.splitlines())
     return top, splitfile(bottom)
 
-files = 'tokenizer baseobjects dispatcher doublequoted unquoted parser __init__'
+files = 'tokenizer baseobjects dispatcher doublequoted unquoted equals parser __init__'
 files = files.split()
 files = [open(os.path.join(root, x+'.py'), 'rb').read() for x in files]
 init_top, init_bottom = split_init(files.pop())

@@ -80,6 +80,11 @@ num7 = .2
         'a:b:c\n d:e\n f:g\na:b:w\n z:x', {'a': {'b': {'c': {'d': 'e', 'f': 'g'}, 'w': {'z': 'x'}}}}
 
         '[]:[]:[]', {():{():[]}}
+
+        'a = Hi there, how are you?', {'a': 'Hi there, how are you?'}
+        'a =Hi there, how are you?', {'a': 'Hi there, how are you?'}
+        'a =  Hi there, how are you?', {'a': ' Hi there, how are you?'}
+        'a =  \n Hi there, how are you?\n   \n   \n   ', {'a': 'Hi there, how are you?'}
         '''
         data = [x.strip() for x in data.splitlines()]
         data = [x for x in data if x and not x.startswith('#')]

@@ -9,7 +9,7 @@ sys.path[0:0] = '..', 'simplejson'
 import simplejson
 import simplejson.tests
 
-from rson import RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects, Tokenizer, RSONDecodeError
+from rson import RsonParser, UnquotedToken, QuotedToken, EqualToken, Dispatcher, BaseObjects, Tokenizer, RSONDecodeError
 
 # For some reason, the only test that simplejson does on actual file location
 # uses a different location than we do...
@@ -20,7 +20,7 @@ def sourceloc(token):
     return offset-1, lineno, colno-1
 Tokenizer.sourceloc = staticmethod(sourceloc)
 
-class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, Dispatcher, BaseObjects):
+class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, EqualToken, Dispatcher, BaseObjects):
     ''' Compatible JSON-only token syntax,
         tries to work same as simplejson
     '''

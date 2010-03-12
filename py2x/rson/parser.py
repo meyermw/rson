@@ -30,6 +30,7 @@ class RsonParser(object):
 
         read_unquoted = self.unquoted_parse_factory()
         read_quoted = self.quoted_parse_factory()
+        parse_equals = self.equal_parse_factory()
         allow_trailing_commas = self.allow_trailing_commas
 
         object_hook = self.object_hook
@@ -116,9 +117,6 @@ class RsonParser(object):
                     error('Expected "," or "}"', delim)
                 break
             return object_pairs_hook(result)
-
-        def parse_equals(token, next):
-            error('Equals processing not implemented yet', token)
 
         json_value_dispatch = {'X':read_unquoted, '[':read_json_array,
                                '{': read_json_dict, '"':read_quoted}.get
