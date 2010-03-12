@@ -4,6 +4,8 @@ Readable Serial Object Notation  (RSON)
 
 Version 0.03
 
+Copyright (c) 2010 Patrick Maupin
+
 .. contents::
 
 Introduction
