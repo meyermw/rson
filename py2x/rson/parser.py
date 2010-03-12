@@ -136,6 +136,7 @@ class RsonParser(object):
 
         def parse_recurse_array(stack, next, token, result):
             arrayindent, linenum = stack[-1][4:6]
+            linenum -= not result
             while 1:
                 thisindent, newlinenum = token[4:6]
                 if thisindent != arrayindent:

@@ -56,8 +56,24 @@ num7 = .2
 
     def test_various(self):
         ae, l = self.assertEquals, newloads
-        ae(l('a:[]\n x'), {'a':['x']})
-        ae(l('[a,b]:[c,d]'), {('a','b'):['c', 'd']})
-        ae(l('{[a,b]:[1,2,3], 0:1}:[c,d]'), {((0, 1), (('a', 'b'), (1, 2, 3)),):['c', 'd']})
-        ae(l('a:b\n c'), {'a': {'b': 'c'}})
-        ae(l('a:b\n c\n d'), {'a': {'b': ['c', 'd']}})
+        data = r'''
+
+        'a:[]\n x', {'a':['x']}
+
+        '[a,b]:[c,d]', {('a','b'):['c', 'd']}
+
+        '{[a,b]:[1,2,3], 0:1}:[c,d]', {((0, 1), (('a', 'b'), (1, 2, 3)),):['c', 'd']}
+
+        'a:b\n c', {'a': {'b': 'c'}}
+
+        'a:b\n c\n d', {'a': {'b': ['c', 'd']}}
+
+        '[]', []
+        '[]\n a\n b', ['a', 'b']
+ #       '[]\n []\n  []', [[[]]]
+        '''
+        data = [x.strip() for x in data.splitlines()]
+        data = [x for x in data if x and not x.startswith('#')]
+        for line in data:
+            s, r = eval(line)
+            ae(l(s), r)
