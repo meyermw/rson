@@ -2,7 +2,7 @@
 Readable Serial Object Notation  (RSON)
 ================================================
 
-Version 0.03
+Version 0.02
 
 Copyright (c) 2010 Patrick Maupin
 
@@ -177,14 +177,15 @@ dict or array, then the indented lines are added into that structure.  In all ot
 cases, the previous line is considered to be a key (or set of keys for a nested
 dict structure), and the indented lines comprise the value for a dictionary.
 
-Implementation
-==================
+Implementation and use
+========================
 
 Currently, there is a Python RSON decoder available at `http://code.google.com/p/rson/`__.
 
 The decoder is made available as a single file download, and works like the JSON decoder:
 
     from rson import loads
+
     result = loads(source)
 
 The decoder is built in a manner that facilitates replacing parts of the decoder, as
