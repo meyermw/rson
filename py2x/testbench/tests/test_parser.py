@@ -81,6 +81,7 @@ num7 = .2
 
         '[]:[]:[]', {():{():[]}}
 
+        'a: = Hi there, how are you?', {'a': 'Hi there, how are you?'}
         'a = Hi there, how are you?', {'a': 'Hi there, how are you?'}
         'a =Hi there, how are you?', {'a': 'Hi there, how are you?'}
         'a =  Hi there, how are you?', {'a': ' Hi there, how are you?'}

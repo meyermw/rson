@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import sys
+import subprocess
+sys.path.insert(0, '../py2x')
+from rson import loads
+
+data = iter(open('manual.txt', 'rb').read().splitlines())
+
+result = []
+for line in data:
+    result.append(line)
+    while line.endswith('::') and '..' not in line:
+        indent = line[:len(line) - len(line.lstrip())] + ' '
+        index = len(result)
+        for line in data:
+            if line.strip() and not line.startswith(indent):
+                break
+            result.append(line)
+        code = '\n'.join(result[index:])
+        code = loads(code)
+        code = repr(code).replace('\\', '\\\\').replace('*', '\\*')
+        code = ' -- *%s*::' % code
+        result[index-1] = result[index-1].replace('::', code)
+        result.append('')
+        result.append(line)
+
+result.append('\n')
+
+f = open('manual2.txt', 'wb')
+f.write('\n'.join(result))
+f.close()
+
+subprocess.call('../../rst2pdf/bin/rst2pdf manual2.txt -e preprocess -e dotted_toc -o manual.pdf'.split())
