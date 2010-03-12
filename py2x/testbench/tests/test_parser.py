@@ -84,8 +84,12 @@ num7 = .2
         'a: = Hi there, how are you?', {'a': 'Hi there, how are you?'}
         'a = Hi there, how are you?', {'a': 'Hi there, how are you?'}
         'a =Hi there, how are you?', {'a': 'Hi there, how are you?'}
-        'a =  Hi there, how are you?', {'a': ' Hi there, how are you?'}
-        'a =  \n Hi there, how are you?\n   \n   \n   ', {'a': 'Hi there, how are you?'}
+        'a =  Hi there, how are you?', {'a': 'Hi there, how are you?'}
+        'a =  \n Hi there, how are you?\n   \n   \n   ', {'a': 'Hi there, how are you?\n'}
+
+
+        '=1\n=2\n3', [1, 2, 3]
+        '=\n 1\n=\n 2\n3', ['1\n', '2\n', 3]
         '''
         data = [x.strip() for x in data.splitlines()]
         data = [x for x in data if x and not x.startswith('#')]

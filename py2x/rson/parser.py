@@ -30,7 +30,7 @@ class RsonParser(object):
 
         read_unquoted = self.unquoted_parse_factory()
         read_quoted = self.quoted_parse_factory()
-        parse_equals = self.equal_parse_factory()
+        parse_equals = self.equal_parse_factory(read_unquoted)
         allow_trailing_commas = self.allow_trailing_commas
 
         object_hook = self.object_hook
