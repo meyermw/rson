@@ -69,11 +69,26 @@ num7 = .2
         'a:b\n c\n d', {'a': {'b': ['c', 'd']}}
 
         '[]', []
+
         '[]\n a\n b', ['a', 'b']
- #       '[]\n []\n  []', [[[]]]
+
+        '[]\n []\n  []',      [[[]]]
+        '[]\n []\n  []\n a',  [[[]], 'a']
+        '[]\n []\n  []\n {}', [[[]], {}]
+        '[]\n []\n  []\n {}\n  a\n   b', [[[]], {'a':'b'}]
+
+        'a:b:c\n d:e\n f:g\na:b:w\n z:x', {'a': {'b': {'c': {'d': 'e', 'f': 'g'}, 'w': {'z': 'x'}}}}
+
+        '[]:[]:[]', {():{():[]}}
         '''
         data = [x.strip() for x in data.splitlines()]
         data = [x for x in data if x and not x.startswith('#')]
         for line in data:
             s, r = eval(line)
             ae(l(s), r)
+
+'''
+Failures -- add tests
+        '[]\n a\n  b'
+
+'''
