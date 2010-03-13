@@ -24,6 +24,8 @@ class RsonParser(object):
         parse_equals = self.equal_parse_factory(read_unquoted)
         new_object, new_array = self.object_type_factory()
         allow_trailing_commas = self.allow_trailing_commas
+        disallow_missing_object_keys = self.disallow_missing_object_keys
+        key_handling = [disallow_missing_object_keys, self.disallow_multiple_object_keys]
 
 
         def bad_array_element(token, next):
@@ -178,8 +180,11 @@ class RsonParser(object):
                 else:
                     entry.append(value)
                 stack.pop()
-            elif len(entry) < 2:
-                error('Expected ":" or "=", or indented line', token)
+            length = len(entry)
+            if length != 2  and key_handling[length > 2]:
+                if length < 2:
+                    error('Expected ":" or "=", or indented line', token)
+                error("rson client's object handlers do not support chained objects", token)
             return entry, token
 
         def parse_recurse_dict(stack, next, token, result):
@@ -213,7 +218,7 @@ class RsonParser(object):
 
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
-                     value == empty_array)):
+                     value == empty_array) and disallow_missing_object_keys):
                 return parse_recurse_array(stack, next, token, new_array([value]))
 
             # Otherwise, return a dict

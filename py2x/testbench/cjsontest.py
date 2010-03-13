@@ -55,7 +55,6 @@ class CJsonSystem(RsonParser, UnquotedToken, QuotedToken, EqualToken, Dispatcher
         special_strings[x] = float(x)
 
     quoted_splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|"|[\x1f])').split
-    object_pairs_expects_tuple = True
 
 simplejson.loads = CJsonSystem.dispatcher_factory()
 simplejson.JSONDecodeError = RSONDecodeError

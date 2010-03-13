@@ -9,21 +9,33 @@ See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
 
 class BaseObjects(object):
 
+    # These hooks allow compatibility with simplejson
     object_hook = None
     object_pairs_hook = None
-    object_pairs_expects_tuple = False
-    array_hook = list
+    array_hook = None
+
+    # Stock object constructor does not cope with no keys
+    disallow_missing_object_keys = True
+
+    # Stock object constructor copes with multiple keys just fine
+    disallow_multiple_object_keys = False
+
+    def default_array_factory(self):
+        ''' This function returns a constructor for RSON arrays.
+        '''
+        return list
 
     class default_object(dict):
-        ''' A replaceable dictionary class with easy
-            attribute access in many cases.
+        ''' By default, RSON objects are dictionaries that
+            allow attribute access to their existing contents.
         '''
-        def __getattr__(self, name):
+        def __init__(self):
             self.__dict__ = self
-            return self[name]
 
     def default_object_factory(self, isinstance=isinstance, dict=dict, hash=hash,
                             tuple=tuple, sorted=sorted, ValueError=ValueError):
+        ''' This function returns a constructor for RSON objects (dicts).
+        '''
 
         default_object = self.default_object
 
@@ -63,18 +75,23 @@ class BaseObjects(object):
         return merge
 
     def object_type_factory(self, dict=dict, tuple=tuple):
+        ''' This function returns constructors for RSON objects and arrays.
+            It handles simplejson compatible hooks as well.
+        '''
         object_hook = self.object_hook
         object_pairs_hook = self.object_pairs_hook
-        if object_pairs_hook is None:
-            if object_hook is None:
-                object_pairs_hook = self.default_object_factory()
-            else:
-                mydict = dict
-                object_pairs_hook = lambda x: object_hook(mydict(x))
-        elif self.object_pairs_expects_tuple:
-            real_object_pairs_hook = object_pairs_hook
-            def object_pairs_hook(what):
-                return real_object_pairs_hook([tuple(x) for x in what])
 
-        return object_pairs_hook, self.array_hook
+        if object_pairs_hook is not None:
+            def build_object(source):
+                return object_pairs_hook([tuple(x) for x in source])
+            self.disallow_multiple_object_keys = True
+        elif object_hook is not None:
+            mydict = dict
+            def build_object(source):
+                return object_hook(mydict(source))
+            self.disallow_multiple_object_keys = True
+        else:
+            build_object = self.default_object_factory()
 
+        build_array = self.array_hook or self.default_array_factory()
+        return build_object, build_array
