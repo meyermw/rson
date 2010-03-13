@@ -24,6 +24,7 @@ class UnquotedToken(object):
             but not both sides
     '''
 
+    use_decimal = False
     parse_int = staticmethod(
         lambda s: int(s.replace('_', ''), 0))
     parse_float = float
@@ -63,6 +64,10 @@ class UnquotedToken(object):
         parse_float = self.parse_float
         parse_int = self.parse_int
         special = self.special_strings
+
+        if self.use_decimal:
+            from decimal import Decimal
+            parse_float = Decimal
 
         def parse(token, next):
             s = token[2]

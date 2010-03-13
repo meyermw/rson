@@ -3,7 +3,6 @@
 ####  NOTE:  THIS IS STILL IN DEVELOPMENT:                                  ####
 ####                                                                        ####
 ####    - No encoder                                                        ####
-####    - = not yet implemented                                             ####
 ####    - Needs more tests!                                                 ####
 ####                                                                        ####
 ################################################################################
@@ -22,7 +21,7 @@ Additional documentation available at:
 http://code.google.com/p/rson/
 '''
 
-__version__ = '0.03'
+__version__ = '0.03++'
 
 __author__ = 'Patrick Maupin <pmaupin@gmail.com>'
 

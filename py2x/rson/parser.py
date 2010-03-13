@@ -11,12 +11,7 @@ class RsonParser(object):
     ''' Parser for RSON
     '''
 
-    object_hook = None
-    object_pairs_hook = None
-    object_pairs_expects_tuple = False
     allow_trailing_commas = True
-    use_decimal = False
-    array_hook = list
 
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list):
 
@@ -24,29 +19,12 @@ class RsonParser(object):
         tokenizer = Tokenizer.factory()
         error = Tokenizer.error
 
-        if self.use_decimal:
-            from decimal import Decimal
-            self.parse_float = Decimal
-
         read_unquoted = self.unquoted_parse_factory()
         read_quoted = self.quoted_parse_factory()
         parse_equals = self.equal_parse_factory(read_unquoted)
+        new_object, new_array = self.object_type_factory()
         allow_trailing_commas = self.allow_trailing_commas
 
-        object_hook = self.object_hook
-        object_pairs_hook = self.object_pairs_hook
-        if object_pairs_hook is None:
-            if object_hook is None:
-                object_pairs_hook = self.dict_factory()
-            else:
-                mydict = dict
-                object_pairs_hook = lambda x: object_hook(mydict(x))
-        elif self.object_pairs_expects_tuple:
-            real_object_pairs_hook = object_pairs_hook
-            def object_pairs_hook(what):
-                return real_object_pairs_hook([tuple(x) for x in what])
-
-        array_hook = self.array_hook
 
         def bad_array_element(token, next):
             error('Expected array element', token)
@@ -67,7 +45,7 @@ class RsonParser(object):
             error('Unexpected indentation', token)
 
         def read_json_array(firsttok, next):
-            result = array_hook()
+            result = new_array()
             append = result.append
             while 1:
                 token = next()
@@ -116,7 +94,7 @@ class RsonParser(object):
                         error('Unterminated dict (no matching "}")', firsttok)
                     error('Expected "," or "}"', delim)
                 break
-            return object_pairs_hook(result)
+            return new_object(result)
 
         json_value_dispatch = {'X':read_unquoted, '[':read_json_array,
                                '{': read_json_dict, '"':read_quoted}.get
@@ -127,8 +105,8 @@ class RsonParser(object):
                                    '=': parse_equals}.get
 
 
-        empty_object = object_pairs_hook([])
-        empty_array = array_hook()
+        empty_object = new_object([])
+        empty_array = new_array()
         empty_array_type = type(empty_array)
         empties = empty_object, empty_array
 
@@ -210,7 +188,7 @@ class RsonParser(object):
                 thisindent = token[4]
                 if thisindent != arrayindent:
                     if thisindent < arrayindent:
-                        return object_pairs_hook(result), token
+                        return new_object(result), token
                     bad_unindent(token, next)
                 key = json_value_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token
@@ -225,7 +203,7 @@ class RsonParser(object):
             '''
             firsttok = stack[-1]
             if firsttok[1] == '=':
-                return parse_recurse_array(stack, next, firsttok, array_hook())
+                return parse_recurse_array(stack, next, firsttok, new_array())
 
             value = json_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
             token = next()
@@ -236,7 +214,7 @@ class RsonParser(object):
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
                      value == empty_array)):
-                return parse_recurse_array(stack, next, token, array_hook([value]))
+                return parse_recurse_array(stack, next, token, new_array([value]))
 
             # Otherwise, return a dict
             entry, token = parse_one_dict_entry(stack, next, token, [value])
