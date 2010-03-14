@@ -4,14 +4,27 @@ from json import loads as sysloads
 from rson import loads as newloads
 
 
+rootdir = os.path.join(os.path.dirname(__file__), '..')
+
 class TestParser(TestCase):
 
     def test_parser(self):
-        sourcedir = os.path.join(os.path.dirname(__file__), '..', 'styles')
+        sourcedir = os.path.join(rootdir, 'styles')
         strings = [open(os.path.join(sourcedir, x), 'rb').read() for x in os.listdir('styles') if x.endswith('json')]
 
         for s in strings:
             self.assert_(sysloads(s) == newloads(s))
+
+    def test_rson_vs_json(self):
+        result = []
+        fnames = (os.path.join(rootdir, 'styles', 'styles.json'),
+                  os.path.join(rootdir,'styles.rson'))
+        for fname in fnames:
+            text = open(fname, 'rb').read()
+            data = newloads(text)
+            data['styles'] = dict(data['styles'])
+            result.append(data)
+        self.assertEquals(*result)
 
     def test_python_syntax(self):
         ''' Test a limited subset of Python syntax,
