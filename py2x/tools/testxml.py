@@ -4,7 +4,7 @@ A simple test of toxml
 
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
-See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
+See http://code.google.com/p/rson/source/browse/trunk/license.txt
 
 '''
 

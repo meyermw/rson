@@ -2,6 +2,8 @@
 Unquoted token parser for RSON.
 
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
+
+See http://code.google.com/p/rson/source/browse/trunk/license.txt
 '''
 
 import re
