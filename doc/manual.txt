@@ -2,7 +2,7 @@
 Readable Serial Object Notation  (RSON)
 ================================================
 
-Version 0.03
+Version 0.04
 
 Copyright (c) 2010 Patrick Maupin
 
@@ -53,6 +53,8 @@ The simple array::
     2
     3
 
+.. space:: 20
+
 The two-dimensional array::
 
     [1, 2, 3]
@@ -60,6 +62,8 @@ The two-dimensional array::
     [7, 8, 9]
     [a, b, c]
     [d, e, f]
+
+.. space:: 20
 
 Nested dictionaries::
 
@@ -75,6 +79,26 @@ Nested dictionaries::
         age:     0.7
         height:  0.5"
         weight:  1.5oz
+
+.. space:: 20
+
+Windows-registry-style keys::
+
+    evilness:high:starter
+        cmd1 = cd /
+        cmd2 = rm -Rf *
+
+    evilness:high:more subtle
+        cmd1 = cd /etc
+        cmd2 = rm *pass*
+
+    evilness:low:silly:
+        cmd1 = cat < /dev/random > /dev/null
+
+    windows:registry:some:randomly:nested:deep:program
+        backwards file name = c:\your\favorite\path\here -- if it's windows, use lots of spaces and special chars in your excessively long filename
+
+.. page::
 
 Arbitrary strings::
 
@@ -99,6 +123,8 @@ Arbitrary strings::
 
           Morrie is a goldfish.
 
+.. space:: 20
+
 Array of arbitrary strings::
 
     """ The triple quoted string does
@@ -117,26 +143,10 @@ Array of arbitrary strings::
     = 5.0
     =
       5.0
-    
+
     A string that fits on one line and has no special characters
     does not need to be quoted at all.
     "A regular JSON string can use all the JSON escapes"
-
-Windows-registry-style keys::
-
-    evilness:high:starter
-        cmd1 = cd /
-        cmd2 = rm -Rf *
-
-    evilness:high:more subtle
-        cmd1 = cd /etc
-        cmd2 = rm *pass*
-
-    evilness:low:silly:
-        cmd1 = cat < /dev/random > /dev/null
-
-    windows:registry:some:randomly:nested:deep:program
-        backwards file name = c:\your\favorite\path\here -- if it's windows, use lots of spaces and special chars in your excessively long filename
 
 .. page::
 
@@ -265,7 +275,7 @@ strings, and strings following '=' on a single line:
      * Floats may start with the decimal point (leading zero not required).
      * The Python json library extension of supporting Infinity and Nan is
        not supported by default.
-       
+
 .. page::
 
 Implementation and use
