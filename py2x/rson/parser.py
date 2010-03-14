@@ -80,6 +80,8 @@ class RsonParser(object):
                         error('Unexpected trailing comma', token)
                     break
                 key = json_value_dispatch(t0, bad_dict_key)(token, next)
+                if disallow_nonstring_keys and not isinstance(key, basestring):
+                    error('Non-string key %s not supported' % repr(key), token)
                 token = next()
                 t0 = token[1]
                 if t0 != ':':
@@ -107,6 +109,9 @@ class RsonParser(object):
                                   '{': read_json_dict, '"':read_quoted,
                                    '=': parse_equals}.get
 
+
+        rson_key_dispatch = (rson_value_dispatch,
+                           json_value_dispatch)[disallow_missing_object_keys]
 
         empty_object = new_object([], None)
         empty_array = new_array([], None)
@@ -200,7 +205,7 @@ class RsonParser(object):
                     if thisindent < arrayindent:
                         return new_object(result, token), token
                     bad_unindent(token, next)
-                key = json_value_dispatch(token[1], bad_top_value)(token, next)
+                key = rson_key_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token
                 entry, token = parse_one_dict_entry(stack, next, next(), [key])
                 result.append(entry)
