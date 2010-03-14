@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 '''
-A simple test of toxml
+A simple test of the toxml module, which allows extended RSON
+syntax to be used to create XML.
+
+This module contains some RSON, and the corresponding XML.  Executing
+the module verifies they are the same.
 
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
@@ -12,7 +16,13 @@ from toxml import rson2xml
 
 source = r'''
 
-# Comments can be used, but are not kept.
+# Comments can be used, but are not kept when the XML is generated.
+
+# In general, blank lines are meaningless, except when inside a
+# triple-quoted or equal delimited string block.
+
+# XML syntax requires a single tag at the top of the file.  We'll
+# call it root:
 
 root:
 
@@ -30,15 +40,21 @@ root:
 
    othertag:
        Just text here -- could be multiple lines but no
-       special chars without an equal sign or triple quote.
+       special chars without quoting or using an equal sign.
 
-   More text inside root element.
+   Some more text inside the root element.
 
    Yetanothertag
-       Note the colon is optional if you indent.
+       Note the colon after the tag is optional if you indent.
 
-       ANIndentedTag:
-           Text inside ANIndentedTag
+       AMoreIndentedTag:
+
+           This text is inside AMoreIndentedTag
+
+           # The equal sign starts a text block.  The text block
+           # continues until we unindent to the level of the
+           # equal sign (or even farther left).
+
            = Lots of text here, all together in a block.
              Can have special characters like \[]{},:"=
              if I want them.
@@ -48,7 +64,9 @@ root:
 
 
            # Attribute for indented tag could be anywhere
-           # at the same indentation level.
+           # at the same indentation level as the rest of
+           # the data inside the tag.  Also, they do not
+           # all need to be declared together.
 
            {att1:whatever}
            {att2: something else}
@@ -56,8 +74,13 @@ root:
                att3: Lots of ways to provide attributes
                att4: if you feel you really need them
            {att5: "but really, do you?  That's the question"}
-       """ I can also use triple-quoted strings
-if I want weird data. """
+
+
+       """I can also use triple-quoted strings.
+
+if I want weird characters inside my data.  With triple-quoted strings, the
+only escaping that occurs is that \\""" has the \ removed from the front of it. """
+
        "And, of course, I can use JSON double-quoted strings"
 
    ATagWithOnlyAttributes:
@@ -72,22 +95,24 @@ dest = r'''
     Some text inside the root element.
     <othertag>
         Just text here -- could be multiple lines but no
-        special chars without an equal sign or triple quote.
+        special chars without quoting or using an equal sign.
     </othertag>
-    More text inside root element.
+    Some more text inside the root element.
     <Yetanothertag>
-        Note the colon is optional if you indent.
-        <ANIndentedTag att1="whatever" att2="something else" att3="Lots of ways to provide attributes" att4="if you feel you really need them" att5="but really, do you?  That's the question">
-            Text inside ANIndentedTag
+        Note the colon after the tag is optional if you indent.
+        <AMoreIndentedTag att1="whatever" att2="something else" att3="Lots of ways to provide attributes" att4="if you feel you really need them" att5="but really, do you?  That's the question">
+            This text is inside AMoreIndentedTag
             Lots of text here, all together in a block.
             Can have special characters like \[]{},:"=
             if I want them.
 
             Blank lines embedded in the block are kept,
             but blank lines at the end are not.
-        </ANIndentedTag>
-         I can also use triple-quoted strings
-        if I want weird data.
+        </AMoreIndentedTag>
+        I can also use triple-quoted strings.
+
+        if I want weird characters inside my data.  With triple-quoted strings, the
+        only escaping that occurs is that \""" has the \ removed from the front of it.
         And, of course, I can use JSON double-quoted strings
     </Yetanothertag>
     <ATagWithOnlyAttributes HereIsAnAttr="and a value" AndAnother="value too"/>
