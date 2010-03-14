@@ -13,7 +13,7 @@ class RsonParser(object):
 
     allow_trailing_commas = True
 
-    def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list):
+    def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
 
         Tokenizer = self.Tokenizer
         tokenizer = Tokenizer.factory()
@@ -26,6 +26,7 @@ class RsonParser(object):
         allow_trailing_commas = self.allow_trailing_commas
         disallow_missing_object_keys = self.disallow_missing_object_keys
         key_handling = [disallow_missing_object_keys, self.disallow_multiple_object_keys]
+        disallow_nonstring_keys = self.disallow_nonstring_keys
 
 
         def bad_array_element(token, next):
@@ -47,7 +48,7 @@ class RsonParser(object):
             error('Unexpected indentation', token)
 
         def read_json_array(firsttok, next):
-            result = new_array()
+            result = new_array([], firsttok)
             append = result.append
             while 1:
                 token = next()
@@ -68,7 +69,7 @@ class RsonParser(object):
                 break
             return result
 
-        def read_json_dict(token, next):
+        def read_json_dict(firsttok, next):
             result = []
             append = result.append
             while 1:
@@ -96,7 +97,7 @@ class RsonParser(object):
                         error('Unterminated dict (no matching "}")', firsttok)
                     error('Expected "," or "}"', delim)
                 break
-            return new_object(result)
+            return new_object(result, firsttok)
 
         json_value_dispatch = {'X':read_unquoted, '[':read_json_array,
                                '{': read_json_dict, '"':read_quoted}.get
@@ -107,8 +108,8 @@ class RsonParser(object):
                                    '=': parse_equals}.get
 
 
-        empty_object = new_object([])
-        empty_array = new_array()
+        empty_object = new_object([], None)
+        empty_array = new_array([], None)
         empty_array_type = type(empty_array)
         empties = empty_object, empty_array
 
@@ -185,6 +186,10 @@ class RsonParser(object):
                 if length < 2:
                     error('Expected ":" or "=", or indented line', token)
                 error("rson client's object handlers do not support chained objects", token)
+            if disallow_nonstring_keys:
+                for key in entry[:-1]:
+                    if not isinstance(key, basestring):
+                        error('Non-string key %s not supported' % repr(key), token)
             return entry, token
 
         def parse_recurse_dict(stack, next, token, result):
@@ -193,7 +198,7 @@ class RsonParser(object):
                 thisindent = token[4]
                 if thisindent != arrayindent:
                     if thisindent < arrayindent:
-                        return new_object(result), token
+                        return new_object(result, token), token
                     bad_unindent(token, next)
                 key = json_value_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token
@@ -208,7 +213,7 @@ class RsonParser(object):
             '''
             firsttok = stack[-1]
             if firsttok[1] == '=':
-                return parse_recurse_array(stack, next, firsttok, new_array())
+                return parse_recurse_array(stack, next, firsttok, new_array([], firsttok))
 
             value = json_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
             token = next()
@@ -219,7 +224,7 @@ class RsonParser(object):
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
                      value in empties) and disallow_missing_object_keys):
-                return parse_recurse_array(stack, next, token, new_array([value]))
+                return parse_recurse_array(stack, next, token, new_array([value], firsttok))
 
             # Otherwise, return a dict
             entry, token = parse_one_dict_entry(stack, next, token, [value])
@@ -233,7 +238,11 @@ class RsonParser(object):
             value, token = parse_recurse([next()], next)
             if token[1] != '@':
                 error('Unexpected additional data', token)
-            if len(value) == 1 and isinstance(value, list):
+
+            # If it's a single item and we don't have a specialized
+            # object builder, just strip the outer list.
+            if (len(value) == 1 and isinstance(value, list)
+                   and disallow_missing_object_keys):
                 value = value[0]
             return value
 

@@ -20,10 +20,15 @@ class BaseObjects(object):
     # Stock object constructor copes with multiple keys just fine
     disallow_multiple_object_keys = False
 
+    # Stock object constructor copes with non-string keys just fine
+    disallow_nonstring_keys = False
+
     def default_array_factory(self):
         ''' This function returns a constructor for RSON arrays.
         '''
-        return list
+        def new_array(startlist, token):
+            return startlist
+        return new_array
 
     class default_object(dict):
         ''' By default, RSON objects are dictionaries that
@@ -48,7 +53,7 @@ class BaseObjects(object):
                     return tuple(sorted(make_hashable(x) for x in what.iteritems()))
                 return tuple(make_hashable(x) for x in what)
 
-        def merge(source):
+        def merge(source, token):
             result = default_object()
             for itemlist in source:
                 mydict = result
@@ -82,14 +87,16 @@ class BaseObjects(object):
         object_pairs_hook = self.object_pairs_hook
 
         if object_pairs_hook is not None:
-            def build_object(source):
+            def build_object(source, token):
                 return object_pairs_hook([tuple(x) for x in source])
             self.disallow_multiple_object_keys = True
+            self.disallow_nonstring_keys = True
         elif object_hook is not None:
             mydict = dict
-            def build_object(source):
+            def build_object(source, token):
                 return object_hook(mydict(source))
             self.disallow_multiple_object_keys = True
+            self.disallow_nonstring_keys = True
         else:
             build_object = self.default_object_factory()
 
