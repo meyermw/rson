@@ -3,6 +3,8 @@
 An example script for RSON that generates XML from source text using the RSON
 parser.
 
+This could use a bit better error reporting, etc. but is basically functional.
+
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
 See http://code.google.com/p/rson/source/browse/#svn/trunk/license.txt
@@ -17,7 +19,12 @@ from rson import RsonSystem
 from xml.sax.saxutils import escape, quoteattr
 
 def xml_dispatcher_factory():
+
     class RsonObject(list):
+        ''' This object is used by rson when parsing, rather than the
+            usual dict inside rson.  Just maintains things in a list.
+            isinstance() is used to distinguish between this and a regular list.
+        '''
         def __init__(self, value, token):
             self.extend(value)
             self.token = token
@@ -28,21 +35,44 @@ def xml_dispatcher_factory():
             return 'RsonObj(%s)' % ', '.join('Item(%s)' % x for x in self)
 
     class RsonXml(RsonSystem):
+        ''' We subclass the rson parser, making a few changes to support
+            our XML syntax and semantics.
+        '''
+
+        # This change allows mixing single values and key/value pairs at
+        # the same indentation level.  We use the key/value pairs for
+        # nested elements, and single values as either text or as attribute
+        # dictionaries, depending on the element type.
+
         disallow_missing_object_keys = False
+
+        # This change disables the normal rson parsing which allows
+        # key1 : key2 : key3 .... : keyn : value to build nested dicts.
+
         disallow_multiple_object_keys = True
+
+        # This change requires that keys be strings.
+
         disallow_nonstring_keys = True
 
+        # This change uses our object instead of the default built-in one
         def default_object_factory(self):
             return RsonObject
+
+        # This change treats all unquoted tokens as strings (no special
+        # casing for numbers, true, false, null).
 
         def unquoted_parse_factory(self, unicode=unicode):
             def parse(token, next):
                 return unicode(token[2], 'utf-8')
-                s = token[2]
             return parse
 
 
     class XmlObject(list):
+        ''' Each instance of this object represents a node in the XML tree.
+            __init__ is passed parse-tree data from rson, and will recursively
+            create the XML sub-objects.
+        '''
         def __init__(self, data):
             tag, data = data
             assert isinstance(tag, basestring)
@@ -64,6 +94,8 @@ def xml_dispatcher_factory():
 
 
         def __str__(self):
+            ''' A reasonably brain-dead object dumper
+            '''
             tag = self.tag
             attr = ['%s=%s' % (x, quoteattr(y)) for (x,y) in self.attr]
             header = [tag] + attr
@@ -82,6 +114,9 @@ def xml_dispatcher_factory():
 
 
     def convert(s):
+        ''' Use our modified loads to read the data in, then convert it
+            to an XML tree and return the tree.
+        '''
         tree = loads(s)
         assert isinstance(tree, RsonObject)
         if len(tree) != 1:
@@ -90,30 +125,30 @@ def xml_dispatcher_factory():
 
     return convert
 
-loads = xml_dispatcher_factory()
+rson2xml = xml_dispatcher_factory()
+
+def rsonf2xmlf(srcf, dstf):
+    f = open(srcf, 'rb')
+    data = f.read()
+    f.close()
+
+    data = rson2xml(data)
+
+    f = open(dstf, 'wb')
+    f.write(str(data))
+    f.close()
 
 if __name__ == '__main__':
-    print loads('''
-root:
-   {}
-      attribute1: hi
-      attribute2: there
-   Some text inside the root element.
-   othertag:
-       Just text here -- could be multiple lines but no
-       special chars without an equal sign or triple quote.
-   More text inside root element.
-   Yetanothertag
-       The colon is optional if you indent.
-       ANIndentedTag:
-           Text inside ANIndentedTag
-           = Lots of text
-             here, all together
-             in a block.  Can have special characters
-             if I want them.
-           # Attribute for indented tag could be anywhere
-           # inside the nest level
-           {att1:whatever}
-           {att2: something else}
-   FinalTag:  Indentation is optional if you use a colon
+    try:
+        srcf, dstf = sys.argv[1:]
+    except:
+        raise SystemError('''
+toxml converts an enhanced rson file into xml.
+
+usage:
+
+    toxml.py <sourcef> <dstf>
 ''')
+
+    rsonf2xmlf(srcf, dstf)
+
