@@ -218,7 +218,7 @@ class RsonParser(object):
 
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
-                     value == empty_array) and disallow_missing_object_keys):
+                     value in empties) and disallow_missing_object_keys):
                 return parse_recurse_array(stack, next, token, new_array([value]))
 
             # Otherwise, return a dict

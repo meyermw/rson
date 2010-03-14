@@ -90,6 +90,9 @@ num7 = .2
 
         '=1\n=2\n3', [1, 2, 3]
         '=\n 1\n=\n 2\n3', ['1\n', '2\n', 3]
+
+        '{}\n x:7\nx', [{'x':7}, 'x']
+
         '''
         data = [x.strip() for x in data.splitlines()]
         data = [x for x in data if x and not x.startswith('#')]
