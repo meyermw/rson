@@ -38,9 +38,20 @@ root:
 
    Some text inside the root element.
 
+   NormalTextTag =
+     If I use the equal sign, everything after that that
+     is indented is treated as text.  I can use any
+     special symbol such as " or = or : or []{} here with
+     no problems.
+
+     This is probably the best, most natural, way to create
+     elements that only have text (no attributes or sub-elements).
+
    othertag:
-       Just text here -- could be multiple lines but no
-       special chars without quoting or using an equal sign.
+       If I don't use the equal sign then I can have sub-tags
+       or attributes here as well as text.  But the text
+       cannot contain RSON special characters unless I
+       quote it (either using double-quote or equal).
 
    Some more text inside the root element.
 
@@ -101,9 +112,20 @@ dest = r'''
 
 <root attribute1="hi" attribute2="there">
     Some text inside the root element.
+    <NormalTextTag>
+        If I use the equal sign, everything after that that
+        is indented is treated as text.  I can use any
+        special symbol such as " or = or : or []{} here with
+        no problems.
+
+        This is probably the best, most natural, way to create
+        elements that only have text (no attributes or sub-elements).
+    </NormalTextTag>
     <othertag>
-        Just text here -- could be multiple lines but no
-        special chars without quoting or using an equal sign.
+        If I don't use the equal sign then I can have sub-tags
+        or attributes here as well as text.  But the text
+        cannot contain RSON special characters unless I
+        quote it (either using double-quote or equal).
     </othertag>
     Some more text inside the root element.
     <Yetanothertag>
