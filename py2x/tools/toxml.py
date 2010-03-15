@@ -55,6 +55,10 @@ def xml_dispatcher_factory():
 
         disallow_nonstring_keys = True
 
+        # This change doesn't use [] as special tokens
+
+        allow_rson_sublists = False
+
         # This change uses our object instead of the default built-in one
         def default_object_factory(self):
             return RsonObject

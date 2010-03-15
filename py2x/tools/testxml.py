@@ -3,8 +3,8 @@
 A simple test of the toxml module, which allows extended RSON
 syntax to be used to create XML.
 
-This module contains some RSON, and the corresponding XML.  Executing
-the module verifies they are the same.
+This module contains some extended RSON, and the corresponding XML.
+Executing the module verifies they are the same.
 
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
@@ -33,25 +33,31 @@ root:
       attribute1: hi
       attribute2: there
 
-   # Unquoted text is allowed, but cannot have \{}[],:=
-   # Unquoted text could have ", but not at first character
+   # Unquoted text is allowed, but cannot have any of \{},"
+   # as the first character, or : or = anywhere inside.
 
    Some text inside the root element.
+
+   [Unlike regular RSON, the [] characters are not special at the top level.]
+   [I wouldn't use them inside attributes ({}), though without quoting.]
 
    NormalTextTag =
      If I use the equal sign, everything after that that
      is indented is treated as text.  I can use any
-     special symbol such as " or = or : or []{} here with
+     special symbol such as " or = or : or {} here with
      no problems.
+
+           Additional indentation is passed on to the output.
 
      This is probably the best, most natural, way to create
      elements that only have text (no attributes or sub-elements).
 
    othertag:
-       If I don't use the equal sign then I can have sub-tags
+       If I don't use the equal sign, I can have sub-tags
        or attributes here as well as text.  But the text
-       cannot contain RSON special characters unless I
-       quote it (either using double-quote or equal).
+       on any given line cannot start with a RSON special
+       character, or contain the colon or equal anywhere
+       on the line (unless I quote that line with "").
 
    Some more text inside the root element.
 
@@ -112,20 +118,25 @@ dest = r'''
 
 <root attribute1="hi" attribute2="there">
     Some text inside the root element.
+    [Unlike regular RSON, the [] characters are not special at the top level.]
+    [I wouldn't use them inside attributes ({}), though without quoting.]
     <NormalTextTag>
         If I use the equal sign, everything after that that
         is indented is treated as text.  I can use any
-        special symbol such as " or = or : or []{} here with
+        special symbol such as " or = or : or {} here with
         no problems.
+
+              Additional indentation is passed on to the output.
 
         This is probably the best, most natural, way to create
         elements that only have text (no attributes or sub-elements).
     </NormalTextTag>
     <othertag>
-        If I don't use the equal sign then I can have sub-tags
+        If I don't use the equal sign, I can have sub-tags
         or attributes here as well as text.  But the text
-        cannot contain RSON special characters unless I
-        quote it (either using double-quote or equal).
+        on any given line cannot start with a RSON special
+        character, or contain the colon or equal anywhere
+        on the line (unless I quote that line with "").
     </othertag>
     Some more text inside the root element.
     <Yetanothertag>
@@ -163,5 +174,10 @@ print answer
 
 answer = [x.rstrip() for x in answer.strip().splitlines()]
 dest = [x.rstrip() for x in dest.strip().splitlines()]
+
+if 0:
+    for x, y in zip(answer, dest):
+        if x != y:
+            print (x,y)
 
 assert answer == dest

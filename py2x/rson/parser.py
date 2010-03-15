@@ -11,6 +11,7 @@ class RsonParser(object):
     '''
 
     allow_trailing_commas = True
+    allow_rson_sublists = True
 
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
 
@@ -100,17 +101,42 @@ class RsonParser(object):
                 break
             return new_object(result, firsttok)
 
+        def read_rson_unquoted(firsttok, next):
+            toklist = []
+            linenum = firsttok[5]
+            while 1:
+                token = next()
+                if token[5] != linenum or token[1] in ':=':
+                    break
+                toklist.append(token)
+            firsttok[-1].push(token)
+            if not toklist:
+                return read_unquoted(firsttok, next)
+            s = list(firsttok[2:4])
+            for tok in toklist:
+                s.extend(tok[2:4])
+            result = list(firsttok)
+            result[3] = s.pop()
+            result[2] = ''.join(s)
+            return read_unquoted(result, next)
+
         json_value_dispatch = {'X':read_unquoted, '[':read_json_array,
                                '{': read_json_dict, '"':read_quoted}.get
 
 
-        rson_value_dispatch = {'X':read_unquoted, '[':read_json_array,
+        rson_value_dispatch = {'X':read_rson_unquoted, '[':read_json_array,
                                   '{': read_json_dict, '"':read_quoted,
-                                   '=': parse_equals}.get
+                                   '=': parse_equals}
 
+        if not self.allow_rson_sublists:
+            rson_value_dispatch['['] = read_rson_unquoted
 
-        rson_key_dispatch = (rson_value_dispatch,
-                           json_value_dispatch)[disallow_missing_object_keys]
+        rson_key_dispatch = rson_value_dispatch.copy()
+        if disallow_missing_object_keys:
+            del rson_key_dispatch['=']
+
+        rson_value_dispatch = rson_value_dispatch.get
+        rson_key_dispatch = rson_key_dispatch.get
 
         empty_object = new_object([], None)
         empty_array = new_array([], None)
