@@ -76,17 +76,25 @@ root:
            {att5: "but really, do you?  That's the question"}
 
 
-       """I can also use triple-quoted strings.
-
+       """I can also use triple-quoted strings,
 if I want weird characters inside my data.  With triple-quoted strings, the
 only escaping that occurs is that \\""" has the \ removed from the front of it. """
 
-       "And, of course, I can use JSON double-quoted strings"
+       "And, of course, I can use JSON double-quoted strings for all sorts of character escapes."
+
+       = XML special characters like &, <, and > are no problem, either.
+         (I just put them inside the equal block quote because the comma is an
+          RSON delimiter character.)  Here, I'll show them without any quoting whatsoever:
+
+       & < >
+
 
    ATagWithOnlyAttributes:
        {HereIsAnAttr: and a value, AndAnother: value too}
+       {EscapeQuotes: " I said \"Hi!\""}
 
-   FinalTag:  Indentation is optional if you use a colon
+   TinyTag: On a single line.
+   FinalTag:  Indentation is optional if you use a colon.
 '''
 
 dest = r'''
@@ -109,15 +117,19 @@ dest = r'''
             Blank lines embedded in the block are kept,
             but blank lines at the end are not.
         </AMoreIndentedTag>
-        I can also use triple-quoted strings.
-
+        I can also use triple-quoted strings,
         if I want weird characters inside my data.  With triple-quoted strings, the
         only escaping that occurs is that \""" has the \ removed from the front of it.
-        And, of course, I can use JSON double-quoted strings
+        And, of course, I can use JSON double-quoted strings for all sorts of character escapes.
+        XML special characters like &amp;, &lt;, and &gt; are no problem, either.
+        (I just put them inside the equal block quote because the comma is an
+         RSON delimiter character.)  Here, I'll show them without any quoting whatsoever:
+        &amp; &lt; &gt;
     </Yetanothertag>
-    <ATagWithOnlyAttributes HereIsAnAttr="and a value" AndAnother="value too"/>
+    <ATagWithOnlyAttributes HereIsAnAttr="and a value" AndAnother="value too" EscapeQuotes=' I said "Hi!"'/>
+    <TinyTag>On a single line.</TinyTag>
     <FinalTag>
-        Indentation is optional if you use a colon
+        Indentation is optional if you use a colon.
     </FinalTag>
 </root>
 
