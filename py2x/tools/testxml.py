@@ -99,12 +99,7 @@ only escaping that occurs is that \\""" has the \ removed from the front of it. 
 
        "And, of course, I can use JSON double-quoted strings for all sorts of character escapes."
 
-       = XML special characters like &, <, and > are no problem, either.
-         (I just put them inside the equal block quote because the comma is an
-          RSON delimiter character.)  Here, I'll show them without any quoting whatsoever:
-
-       & < >
-
+       XML special characters like &, <, and > are no problem, either.
 
    ATagWithOnlyAttributes:
        {HereIsAnAttr: and a value, AndAnother: value too}
@@ -155,9 +150,6 @@ dest = r'''
         only escaping that occurs is that \""" has the \ removed from the front of it.
         And, of course, I can use JSON double-quoted strings for all sorts of character escapes.
         XML special characters like &amp;, &lt;, and &gt; are no problem, either.
-        (I just put them inside the equal block quote because the comma is an
-         RSON delimiter character.)  Here, I'll show them without any quoting whatsoever:
-        &amp; &lt; &gt;
     </Yetanothertag>
     <ATagWithOnlyAttributes HereIsAnAttr="and a value" AndAnother="value too" EscapeQuotes=' I said "Hi!"'/>
     <TinyTag>On a single line.</TinyTag>
