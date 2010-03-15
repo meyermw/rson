@@ -216,15 +216,12 @@ class RsonParser(object):
                 of length 1 and strip the contents out of the array.
             '''
             firsttok = stack[-1]
-            if firsttok[1] == '=':
-                return parse_recurse_array(stack, next, firsttok, new_array([], firsttok))
-
-            value = json_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
-            token = next()
+            value = rson_value_dispatch(firsttok[1], bad_top_value)(firsttok, next)
 
             # We return an array if the next value is on a new line and either
             # is at the same indentation, or the current value is an empty list
 
+            token = next()
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
                      value in empties) and disallow_missing_object_keys):
