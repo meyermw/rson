@@ -105,8 +105,8 @@ only escaping that occurs is that \\""" has the \ removed from the front of it. 
        {HereIsAnAttr: and a value, AndAnother: value too}
        {EscapeQuotes: " I said \"Hi!\""}
 
-   TinyTag: On a single line.
-   FinalTag:  Indentation is optional if you use a colon.
+   PenultimateTag:Indentation is optional if you use a colon
+   FinalTag=Or an equal sign.
 '''
 
 dest = r'''
@@ -152,10 +152,10 @@ dest = r'''
         XML special characters like &amp;, &lt;, and &gt; are no problem, either.
     </Yetanothertag>
     <ATagWithOnlyAttributes HereIsAnAttr="and a value" AndAnother="value too" EscapeQuotes=' I said "Hi!"'/>
-    <TinyTag>On a single line.</TinyTag>
-    <FinalTag>
-        Indentation is optional if you use a colon.
-    </FinalTag>
+    <PenultimateTag>
+        Indentation is optional if you use a colon
+    </PenultimateTag>
+    <FinalTag>Or an equal sign.</FinalTag>
 </root>
 
 '''
