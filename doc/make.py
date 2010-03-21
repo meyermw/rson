@@ -12,6 +12,8 @@ result = []
 for line in data:
     result.append(line)
     while line.endswith('::') and '..' not in line:
+        result[-1] = line.replace(' (break)', '')
+        pagebreak = line != result[-1]
         indent = line[:len(line) - len(line.lstrip())] + ' '
         index = len(result)
         for line in data:
@@ -20,8 +22,11 @@ for line in data:
             result.append(line)
         code = '\n'.join(result[index:])
         code = loads(code)
-        code = dumps(code, indent=4)
+        code = dumps(code, indent=2)
         code = '\n'.join(indent + '   ' + x for x in code.splitlines())
+        if pagebreak:
+            result.append('.. page::')
+            result.append('')
         result.append(indent[:-1] + 'Results in the following equivalent JSON::')
         result.append('')
         result.append(code)

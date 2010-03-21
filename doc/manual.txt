@@ -2,7 +2,11 @@
 Readable Serial Object Notation  (RSON)
 ================================================
 
-Version 0.05
+.. footer::
+
+    ###Page###
+
+Version 0.06
 
 Copyright (c) 2010 Patrick Maupin
 
@@ -21,29 +25,43 @@ RSON syntax is relaxed compared to JSON:
   decoder.)
 - Comments are allowed with a leading **#** (in any column)
   if the comment is the only non-whitespace on the line.
+  (But inside a triple-quoted or equal-delimited string, the
+  # may not always start a comment -- it may be part of the string.)
 - String quoting is not required unless the string contains
-  any RSON special characters. (RSON special characters are the
-  same as JSON special characters, plus "**=**".)
-- Integer formats include hex, binary, and octal, and embedded
-  underscores are allowed.
+  any RSON special characters. RSON special characters are:
+
+     **{** **}** **[** **]** **:** **,** **"** **=**
+
+
+  (The same as the JSON special characters, plus **=**.)
 - Python-style triple-quoted (**"""**) strings are supported for
   practically arbitrary embedded data.
+- Integer formats include hex, binary, and octal, and embedded
+  underscores are allowed.
 
 In addition to the relaxed JSON syntax, RSON supports Python-style
-indentation to create structures.  When inside any **[]** or **{}**
+indentation to create structures.  When *inside* any **[]** or **{}**
 pair, the syntax is JSON syntax, with the enhancements described
 above.  *Outside* any **[]** or **{}** pairs, RSON indented syntax
 is used to describe the structure.
 
 RSON indentation controls the nesting levels of dicts or lists.  As
-with Python, spaces or tabs may be used but it is inadvisable to mix them.
+with Python, spaces or tabs may be used (in fact, any valid JSON
+whitespace except \\n or \\r may be used for any whitespace, including
+indentation),  but RSON does not make any equivalence between tabs
+and spaces, so indenting a line the same as or more than a previous line
+requires prefixing the line with exactly the same whitespace characters
+as were used on the previous line.  Mixing tab and space (or other)
+indentation whitespace will most likely result in an error.
 
 .. page::
 
 Examples
 ============
 
-Any valid JSON is valid RSON, so no pure JSON examples are given.
+The examples all show RSON syntax, followed by the equivalent JSON,
+which is calculated by using the RSON decoder and the simplejson encoder
+on the RSON string.
 
 The simple array::
 
@@ -93,9 +111,11 @@ Windows-registry-style keys::
         cmd1 = cat < /dev/random > /dev/null
 
     windows:registry:some:randomly:nested:deep:program
-        backwards file name = c:\your\favorite\path\here -- if it's windows, use lots of spaces and special chars in your excessively long filename
+        # If it's Windows, use lots of spaces and special chars
+        # in your excessively long filename
+        backwards file name = c:\your\favorite\path\here(&there??).exe
 
-Arbitrary strings::
+Arbitrary strings (break)::
 
     George:
         age:     42
@@ -103,7 +123,6 @@ Arbitrary strings::
         weight:  232
         comment: """
       Python style triple quotes leave data intact"""
-
 
     Sam:
         age:     13
@@ -118,20 +137,26 @@ Arbitrary strings::
 
           Morrie is a goldfish.
 
-Array of arbitrary strings::
+Array of arbitrary strings (break)::
 
-    """ The triple quoted string does
-               absolutely nothing to intervening data.
-                       """
-    = The equal string
-      does special processing.  For example,
-      the next = actually doesn't prefix a string, but
-      the one after it does.
+    # The triple quoted string does absolutely nothing to
+    # intervening data
+    """ Here is a
+            string with trailing spaces   """
 
-    # This is a comment
-      # This is a part of the string
+    # The equal string does special processing.
+    # If the '#' is far enough to the right, it
+    # is part of the string:
+    = John Doe
+      123 Main Street
+    # The following is an apartment number
+      #120
+      Anytown, USA 12345
 
-      See the section on syntax for scalars further down.
+    # Another thing that = does special is to treat
+    # any multi-line = as a string, while allowing
+    # a single line = to be another kind of scalar.
+    # See the section on syntax for scalars further down.
 
     = 5.0
     =
@@ -156,7 +181,6 @@ Nested arrays and dicts::
        w: []
            m
 
-
 Syntax rules
 ===============
 
@@ -173,38 +197,50 @@ Outside any **[]** or **{}** delimiter pairs, the following rules apply:
   which are indented more, but stops on the first line which is indented less),
   either comprises:
 
-      * A single scalar (must be all on one line, or a triple quoted, or equal
-        prefixed string)
-      * A list (JSON array)
       * A dict (JSON object)
 
-  The determination is made based on whether the items at the indentation are
-  key/value pairs, or are single array elements.  It is an error to mix the
-  two -- the results must be either a dict or an array.
+            The group of lines at a given indentation level is considered to
+            be a dict if the first line *contains* a key/value pair (a key, followed
+            by **:** or **=** and a value), or *starts* a key/value pair (contains
+            a key, and is followed by one or more indented lines comprising the value).
 
-- An equal sign may be used to denote the start of a value scalar.  This scalar
-  extends to the end of the line, and through any more-indented lines until
-  a line at the same or lesser indentation as the line containing the equal
-  sign is found.  This value scalar cannot be the key of a key/value pair,
-  because the syntax is such that any trailing colon or indented lines are
-  actually part of the scalar value, and not syntactically meaningful to RSON.
+      * A single scalar (JSON string or number, or true, false, or null)
+
+            If the group of lines cannot be interpreted as a dict, and consists
+            of a single line, or a single triple-quoted or equal-prefixed string.
+
+      * A list (JSON array)
+
+            If the group of lines cannot be interpreted as a dict or single
+            scalar, and contains more than one line.
+
+- An equal sign may be used to denote the start of a value scalar.  The string
+  representing this scalar extends to the end of the line, and through any
+  more-indented lines until a line at the same or lesser indentation as the
+  line containing the equal sign is found.  This value scalar cannot be the
+  key of a key/value pair, because the syntax is such that any trailing colon
+  or indented lines are actually part of the scalar value, and not syntactically
+  meaningful to RSON.
 
   This equal-sign prefixed scalar string is trimmed both horizontally and
   vertically.  (See the section on scalars.)
 
 - A colon is used to separate a key from its value.  This can be done repeatedly,
-  and the resultant dictionaries are merged.
+  e.g::
+
+        a:b:c:d
+        a:b:e:f
 
 - A colon will be assumed if one is not present between a key and an equal sign
   which denotes the start of a value scalar.
 
-- A colon will be assumed if not present between a key and group of lines that
-  is more indented than the line the key is on.  (But see complex structure syntax,
+- A colon will also be assumed if not present between a key and group of lines that
+  is more indented than the line the key is on.  (But see `Empty Lists and Dicts`_,
   below, for exceptions.)
 
 .. page::
 
-Complex syntax structure
+Empty Lists and Dicts
 -------------------------
 
 Sometimes, an array is required that has some array elements and some
@@ -216,6 +252,21 @@ If that previous value is an *empty* dict or array, then the indented
 lines are added into that structure.  In all other cases, the previous
 line is considered to be a key (or set of keys for a nested dict structure),
 and the indented lines comprise the value for a dictionary.
+
+For example::
+
+    1
+    2
+    3
+    []
+        a
+        b
+        c
+    {}
+        d:e
+        f:g
+    4
+    5
 
 Scalars (numbers, strings, true, false, null)
 ----------------------------------------------
@@ -268,8 +319,6 @@ strings, and strings following '=' on a single line:
      * Floats may start with the decimal point (leading zero not required).
      * The Python json library extension of supporting Infinity and Nan is
        not supported by default.
-
-.. page::
 
 Implementation and use
 ========================
