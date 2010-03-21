@@ -2,7 +2,7 @@
 Readable Serial Object Notation  (RSON)
 ================================================
 
-Version 0.04
+Version 0.05
 
 Copyright (c) 2010 Patrick Maupin
 
@@ -26,8 +26,6 @@ RSON syntax is relaxed compared to JSON:
   same as JSON special characters, plus "**=**".)
 - Integer formats include hex, binary, and octal, and embedded
   underscores are allowed.
-- Trailing commas are allowed inside **[]** and **{}**.
-- Dictionary keys do not have to be strings, or even scalars.
 - Python-style triple-quoted (**"""**) strings are supported for
   practically arbitrary embedded data.
 
@@ -61,9 +59,8 @@ The two-dimensional array::
     [4, 5, 6]
     [7, 8, 9]
     [a, b, c]
-    [d, e, f]
 
-.. space:: 20
+.. page::
 
 Nested dictionaries::
 
@@ -98,8 +95,6 @@ Windows-registry-style keys::
     windows:registry:some:randomly:nested:deep:program
         backwards file name = c:\your\favorite\path\here -- if it's windows, use lots of spaces and special chars in your excessively long filename
 
-.. page::
-
 Arbitrary strings::
 
     George:
@@ -122,8 +117,6 @@ Arbitrary strings::
         comment = Equals strings have some trimming.
 
           Morrie is a goldfish.
-
-.. space:: 20
 
 Array of arbitrary strings::
 
@@ -148,7 +141,7 @@ Array of arbitrary strings::
     does not need to be quoted at all.
     "A regular JSON string can use all the JSON escapes"
 
-.. page::
+.. space:: 20
 
 Nested arrays and dicts::
 

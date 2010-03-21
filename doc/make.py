@@ -4,6 +4,7 @@ import sys
 import subprocess
 sys.path.insert(0, '../py2x')
 from rson import loads
+from simplejson import dumps
 
 data = iter(open('manual.txt', 'rb').read().splitlines())
 
@@ -19,9 +20,11 @@ for line in data:
             result.append(line)
         code = '\n'.join(result[index:])
         code = loads(code)
-        code = repr(code).replace('\\', '\\\\').replace('*', '\\*')
-        code = ' -- *%s*::' % code
-        result[index-1] = result[index-1].replace('::', code)
+        code = dumps(code, indent=4)
+        code = '\n'.join(indent + '   ' + x for x in code.splitlines())
+        result.append(indent[:-1] + 'Results in the following equivalent JSON::')
+        result.append('')
+        result.append(code)
         result.append('')
         result.append(line)
 
