@@ -37,10 +37,8 @@ class CJsonSystem(rson.RsonSystem):
     # These are simple things that simplejson does
 
     cachestrings = True
-    allow_trailing_commas = False
     parse_int = int
     disallow_multiple_object_keys = True
-    disallow_nonstring_keys = True
 
     # simplejson requires an unquoted literal to be
     # a number or one of the special values like true

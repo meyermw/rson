@@ -20,8 +20,8 @@ class BaseObjects(object):
     # Stock object constructor copes with multiple keys just fine
     disallow_multiple_object_keys = False
 
-    # Stock object constructor copes with non-string keys just fine
-    disallow_nonstring_keys = False
+    # Default JSON requires string keys
+    disallow_nonstring_keys = True
 
     def default_array_factory(self):
         ''' This function returns a constructor for RSON arrays.

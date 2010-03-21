@@ -10,7 +10,7 @@ class RsonParser(object):
     ''' Parser for RSON
     '''
 
-    allow_trailing_commas = True
+    allow_trailing_commas = False
     allow_rson_sublists = True
 
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
