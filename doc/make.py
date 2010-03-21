@@ -33,10 +33,25 @@ for line in data:
         result.append('')
         result.append(line)
 
-result.append('\n')
+result.append('')
+result = '\n'.join(result)
 
 f = open('manual2.txt', 'wb')
-f.write('\n'.join(result))
+f.write(result)
 f.close()
 
 subprocess.call('../../rst2pdf/bin/rst2pdf manual2.txt -e preprocess -e dotted_toc -o manual.pdf'.split())
+
+lines = result.splitlines()
+result = []
+for line in lines:
+    if 'page::' not in line and 'space::' not in line:
+        result.append(line)
+
+result.append('')
+result = '\n'.join(result)
+
+f = open('manual3.txt', 'wb')
+f.write(result)
+f.close()
+
