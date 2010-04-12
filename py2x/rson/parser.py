@@ -161,7 +161,7 @@ class RsonParser(object):
                         if lastitem == empty_array:
                             result[-1], token = parse_recurse_array(stack, next, token, lastitem)
                         elif lastitem == empty_object:
-                            result[-1], token = parse_recurse_dict(stack, next, token)
+                            result[-1], token = parse_recurse_dict(stack, next, token, lastitem)
                         else:
                             result = None
                     if result:
@@ -180,7 +180,7 @@ class RsonParser(object):
                 result.append(value)
                 token = next()
 
-        def parse_one_dict_entry(stack, next, token, entry):
+        def parse_one_dict_entry(stack, next, token, entry, mydict):
             arrayindent, linenum = stack[-1][4:6]
             while token[1] == ':':
                 tok1 = next()
@@ -224,12 +224,10 @@ class RsonParser(object):
                 for key in entry[:-1]:
                     if not isinstance(key, basestring):
                         error('Non-string key %s not supported' % repr(key), token)
-            return entry, token
+            mydict.append(entry)
+            return token
 
-        def parse_recurse_dict(stack, next, token, first_entry=None):
-            result = new_object()
-            if first_entry is not None:
-                result.append(first_entry)
+        def parse_recurse_dict(stack, next, token, result):
             arrayindent = stack[-1][4]
             while 1:
                 thisindent = token[4]
@@ -239,10 +237,9 @@ class RsonParser(object):
                     bad_unindent(token, next)
                 key = rson_key_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token
-                entry, token = parse_one_dict_entry(stack, next, next(), [key])
-                result.append(entry)
+                token = parse_one_dict_entry(stack, next, next(), [key], result)
 
-        def parse_recurse(stack, next):
+        def parse_recurse(stack, next, tokens=None):
             ''' parse_recurse ALWAYS returns a list or a dict.
                 (or the user variants thereof)
                 It is up to the caller to determine that it was an array
@@ -258,18 +255,24 @@ class RsonParser(object):
             if (token[5] != firsttok[5] and
                     (token[4] <= firsttok[4] or
                      value in empties) and disallow_missing_object_keys):
-                return parse_recurse_array(stack, next, token, new_array([value], firsttok))
+                result = new_array([value], firsttok)
+                if tokens is not None:
+                    tokens.top_object = result
+                return parse_recurse_array(stack, next, token, result)
 
             # Otherwise, return a dict
-            entry, token = parse_one_dict_entry(stack, next, token, [value])
-            return parse_recurse_dict(stack, next, token, entry)
+            result = new_object()
+            if tokens is not None:
+                tokens.top_object = result
+            token = parse_one_dict_entry(stack, next, token, [value], result)
+            return parse_recurse_dict(stack, next, token, result)
 
 
         def parse(source):
             tokens = tokenizer(source, None)
             tokens.stringcache = {}.setdefault
             next = tokens.next
-            value, token = parse_recurse([next()], next)
+            value, token = parse_recurse([next()], next, tokens)
             if token[1] != '@':
                 error('Unexpected additional data', token)
 

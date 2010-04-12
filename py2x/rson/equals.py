@@ -78,7 +78,7 @@ class EqualToken(object):
             stringlist = bigstring.split('\n')
             stringlist[0] = indent + stringlist[0]
             token = list(firsttok)
-            token[1:3] = 'X', parse_equals(stringlist, indent, firsttok)
+            token[1:3] = '=', parse_equals(stringlist, indent, firsttok)
             return encoder(token, next)
 
         return parse
