@@ -10,8 +10,9 @@ class RsonParser(object):
     ''' Parser for RSON
     '''
 
-    allow_trailing_commas = False
-    allow_rson_sublists = True
+    disallow_trailing_commas = True
+    disallow_rson_sublists = False
+    disallow_rson_subdicts = False
 
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
 
@@ -23,7 +24,7 @@ class RsonParser(object):
         read_quoted = self.quoted_parse_factory()
         parse_equals = self.equal_parse_factory(read_unquoted)
         new_object, new_array = self.object_type_factory()
-        allow_trailing_commas = self.allow_trailing_commas
+        disallow_trailing_commas = self.disallow_trailing_commas
         disallow_missing_object_keys = self.disallow_missing_object_keys
         key_handling = [disallow_missing_object_keys, self.disallow_multiple_object_keys]
         disallow_nonstring_keys = self.disallow_nonstring_keys
@@ -54,7 +55,7 @@ class RsonParser(object):
                 token = next()
                 t0 = token[1]
                 if t0 == ']':
-                    if result and not allow_trailing_commas:
+                    if result and disallow_trailing_commas:
                         error('Unexpected trailing comma', token)
                     break
                 append(json_value_dispatch(t0,  bad_array_element)(token, next))
@@ -76,7 +77,7 @@ class RsonParser(object):
                 token = next()
                 t0 = token[1]
                 if t0  == '}':
-                    if result and not allow_trailing_commas:
+                    if result and disallow_trailing_commas:
                         error('Unexpected trailing comma', token)
                     break
                 key = json_value_dispatch(t0, bad_dict_key)(token, next)
@@ -128,8 +129,11 @@ class RsonParser(object):
                                   '{': read_json_dict, '"':read_quoted,
                                    '=': parse_equals}
 
-        if not self.allow_rson_sublists:
+        if self.disallow_rson_sublists:
             rson_value_dispatch['['] = read_rson_unquoted
+
+        if self.disallow_rson_subdicts:
+            rson_value_dispatch['{'] = read_rson_unquoted
 
         rson_key_dispatch = rson_value_dispatch.copy()
         if disallow_missing_object_keys:

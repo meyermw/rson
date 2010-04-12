@@ -57,7 +57,7 @@ def xml_dispatcher_factory():
 
         # This change doesn't use [] as special tokens
 
-        allow_rson_sublists = False
+        disallow_rson_sublists = True
 
         # This change uses our object instead of the default built-in one
         def default_object_factory(self):
