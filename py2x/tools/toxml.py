@@ -25,9 +25,9 @@ def xml_dispatcher_factory():
             usual dict inside rson.  Just maintains things in a list.
             isinstance() is used to distinguish between this and a regular list.
         '''
-        def __init__(self, value, token):
-            self.extend(value)
+        def get_result(self, token):
             self.token = token
+            return self
         def error(self, msg):
             token = self.token
             token[-1].error(msg, token)
@@ -60,8 +60,7 @@ def xml_dispatcher_factory():
         disallow_rson_sublists = True
 
         # This change uses our object instead of the default built-in one
-        def default_object_factory(self):
-            return RsonObject
+        default_object = RsonObject
 
         # This change treats all unquoted tokens as strings (no special
         # casing for numbers, true, false, null).

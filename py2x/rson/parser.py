@@ -71,7 +71,7 @@ class RsonParser(object):
             return result
 
         def read_json_dict(firsttok, next):
-            result = []
+            result = new_object()
             append = result.append
             while 1:
                 token = next()
@@ -100,7 +100,7 @@ class RsonParser(object):
                         error('Unterminated dict (no matching "}")', firsttok)
                     error('Expected "," or "}"', delim)
                 break
-            return new_object(result, firsttok)
+            return result.get_result(firsttok)
 
         def read_rson_unquoted(firsttok, next):
             toklist = []
@@ -142,7 +142,7 @@ class RsonParser(object):
         rson_value_dispatch = rson_value_dispatch.get
         rson_key_dispatch = rson_key_dispatch.get
 
-        empty_object = new_object([], None)
+        empty_object = new_object().get_result(None)
         empty_array = new_array([], None)
         empty_array_type = type(empty_array)
         empties = empty_object, empty_array
@@ -161,7 +161,7 @@ class RsonParser(object):
                         if lastitem == empty_array:
                             result[-1], token = parse_recurse_array(stack, next, token, lastitem)
                         elif lastitem == empty_object:
-                            result[-1], token = parse_recurse_dict(stack, next, token, [])
+                            result[-1], token = parse_recurse_dict(stack, next, token)
                         else:
                             result = None
                     if result:
@@ -226,13 +226,16 @@ class RsonParser(object):
                         error('Non-string key %s not supported' % repr(key), token)
             return entry, token
 
-        def parse_recurse_dict(stack, next, token, result):
+        def parse_recurse_dict(stack, next, token, first_entry=None):
+            result = new_object()
+            if first_entry is not None:
+                result.append(first_entry)
             arrayindent = stack[-1][4]
             while 1:
                 thisindent = token[4]
                 if thisindent != arrayindent:
                     if thisindent < arrayindent:
-                        return new_object(result, token), token
+                        return result.get_result(token), token
                     bad_unindent(token, next)
                 key = rson_key_dispatch(token[1], bad_top_value)(token, next)
                 stack[-1] = token
@@ -259,7 +262,7 @@ class RsonParser(object):
 
             # Otherwise, return a dict
             entry, token = parse_one_dict_entry(stack, next, token, [value])
-            return parse_recurse_dict(stack, next, token, [entry])
+            return parse_recurse_dict(stack, next, token, entry)
 
 
         def parse(source):
