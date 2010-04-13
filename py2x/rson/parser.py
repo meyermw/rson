@@ -18,6 +18,9 @@ class RsonParser(object):
     def post_parse(tokens, value):
         return value
 
+    def client_info(self, parse_locals):
+        pass
+
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
 
         Tokenizer = self.Tokenizer
@@ -276,6 +279,7 @@ class RsonParser(object):
         def parse(source):
             tokens = tokenizer(source, None)
             tokens.stringcache = {}.setdefault
+            tokens.client_info = client_info
             next = tokens.next
             value, token = parse_recurse([next()], next, tokens)
             if token[1] != '@':
@@ -287,5 +291,7 @@ class RsonParser(object):
                    and disallow_missing_object_keys):
                 value = value[0]
             return post_parse(tokens, value)
+
+        client_info = self.client_info(locals())
 
         return parse

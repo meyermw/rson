@@ -60,27 +60,6 @@ class MacroProxy(object):
             myobj = subobj
         return myobj
 
-    def handle_include(self, s):
-        assert s and not s.startswith('@'), s
-        fname = self.handle_macro(s)
-        # Do whatever stuff you want here to fix the filename up
-        # (look in the current directory, whatever)
-        f = open(fname, 'rb')
-        data = f.read()
-        f.close()
-        return loads(data)
-
-    def dereference(self):
-        if self.actual is not None:
-            return self.actual
-        s = self.token[2]
-        if s.startswith('@'):
-            result = self.handle_include(s[1:])
-        else:
-            result = self.handle_macro(s)
-        self.actual = result
-        return result
-
     def handle_macro(self, s):
         strings = [x for x in self.macro_split(s) if x]
         strings = iter(strings)
@@ -129,11 +108,39 @@ class MacroProxy(object):
         result = u''.join(unicode(x) for x in result)
         return result
 
+    def handle_include(self, s):
+        client_info = self.token[-1].client_info
+        assert s and not s.startswith('@'), s
+        fname = self.handle_macro(s)
+        # Do whatever stuff you want here to fix the filename up
+        # (look in the current directory, whatever)
+        # Suggested to use client_info to store search path.
+        f = open(fname, 'rb')
+        data = f.read()
+        f.close()
+        return client_info.parse(data)
+
+    def dereference(self):
+        if self.actual is not None:
+            return self.actual
+        s = self.token[2]
+        if s.startswith('@'):
+            result = self.handle_include(s[1:])
+        else:
+            result = self.handle_macro(s)
+        self.actual = result
+        return result
+
 class RsonMacros(RsonSystem):
 
     class Tokenizer(Tokenizer):
         def __init__(self):
             self.proxylist = []
+
+    def client_info(self, parse_locals):
+        class Info(object):
+            parse = staticmethod(parse_locals['parse'])
+        return Info
 
     @staticmethod
     def post_parse(tokens, value):
