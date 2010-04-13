@@ -9,7 +9,6 @@ TODO:
     - Perhaps move under RSON, and start distributing RSON as a package rather
       than a single module.
     - Figure out way to specify an include path
-    - Maybe make it where you don't need to do str()
 
 Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
@@ -30,36 +29,60 @@ Macro processing uses the following special characters:
 
 Within a macro, the characters .[] are special.  They are all separator characters between
 macro identifiers.
-
-Macros can reference any data in the same file that:
-
-  - has already been encountered; and
-  - is not in the same nested RSON structure
-
-If the the data is in the same nested RSON structure, it can be used, but
-must be dereferenced later (e.g. via str()).  This doesn't work for macros
-used in include file names, where the names must be in a different top-level
-RSON structure than anything using the name via $
 '''
 
 
 import sys
 import re
 sys.path.insert(0, '..')
-from rson import RsonSystem
+from rson import RsonSystem, Tokenizer
+from rson.baseobjects import make_hashable
 
-class StringProxy(object):
+class MacroProxy(object):
     macro_special_chars = '[]().$'
     macro_split = re.compile(r'([A-Za-z0-9_]+|%s)' % '|'.join('\\'+x for x in macro_special_chars)).split
+    actual = None
 
     def __init__(self, token):
         self.token = token
 
-    @property
+    def findobj(self, lookup):
+        myobj = self.token[-1].top_object
+        for s in lookup:
+            try:
+                index = int(s)
+                myobj[index]
+            except:
+                index = str(s)
+            subobj = myobj[index]
+            if isinstance(subobj, type(self)):
+                myobj[index] = subobj = subobj.dereference()
+            myobj = subobj
+        return myobj
+
+    def handle_include(self, s):
+        assert s and not s.startswith('@'), s
+        fname = self.handle_macro(s)
+        # Do whatever stuff you want here to fix the filename up
+        # (look in the current directory, whatever)
+        f = open(fname, 'rb')
+        data = f.read()
+        f.close()
+        return loads(data)
+
     def dereference(self):
-        token = self.token
-        top_obj = token[-1].top_object
-        strings = [x for x in self.macro_split(token[2]) if x]
+        if self.actual is not None:
+            return self.actual
+        s = self.token[2]
+        if s.startswith('@'):
+            result = self.handle_include(s[1:])
+        else:
+            result = self.handle_macro(s)
+        self.actual = result
+        return result
+
+    def handle_macro(self, s):
+        strings = [x for x in self.macro_split(s) if x]
         strings = iter(strings)
         result = []
 
@@ -69,8 +92,7 @@ class StringProxy(object):
                     s = handle_dollar(result)
                 if s == endch:
                     return s
-                result.append(s)
-
+                result.append(unicode(s, 'utf-8'))
 
         def handle_dollar(result):
             lookup = []
@@ -97,73 +119,93 @@ class StringProxy(object):
             if gotparen:
                 assert s == ')'
                 s = ''
-            nexts = s
-
-            myobj = top_obj
-            for s in lookup:
-                try:
-                    ints = int(s)
-                except ValueError:
-                    pass
-                else:
-                    try:
-                        myobj = myobj[ints]
-                    except:
-                        pass
-                    else:
-                        continue
-                myobj = myobj[s]
-            result.append(myobj)
-            return nexts
+            result.append(self.findobj(lookup))
+            return s
 
         result = []
         recurse(result)
         if len(result) == 1:
-            return result[0]
-        return ''.join(str(x) for x in result)
-
-    def __repr__(self):
-        return unicode(self.dereference, 'utf-8')
+            result = result[0]
+        result = u''.join(unicode(x) for x in result)
+        return result
 
 class RsonMacros(RsonSystem):
+
+    class Tokenizer(Tokenizer):
+        def __init__(self):
+            self.proxylist = []
+
+    @staticmethod
+    def post_parse(tokens, value):
+        for obj, index in tokens.proxylist:
+            subobj = obj[index]
+            if isinstance(subobj, MacroProxy):
+                obj[index] = subobj.dereference()
+        return value
+
+    class default_array(list):
+        def __init__(self, startlist, token):
+            if token is not None:
+                self.proxylist = token[-1].proxylist
+            list.__init__(self, startlist)
+        def append(self, value):
+            if isinstance(value, MacroProxy):
+                self.proxylist.append((self, len(self)))
+            list.append(self, value)
+
+    class default_object(dict):
+        ''' By default, RSON objects are dictionaries that
+            allow attribute access to their existing contents.
+        '''
+        def __init__(self):
+            self.proxylist = []
+
+        def append(self, itemlist):
+            mydict = self
+            value = itemlist.pop()
+            itemlist = [make_hashable(x) for x in itemlist]
+            lastkey = itemlist.pop()
+
+            if itemlist:
+                itemlist.reverse()
+                while itemlist:
+                    key = itemlist.pop()
+                    subdict = mydict.get(key)
+                    if not isinstance(subdict, dict):
+                        subdict = mydict[key] = type(self)()
+                    mydict = subdict
+            if isinstance(value, dict):
+                oldvalue = mydict.get(lastkey)
+                if isinstance(oldvalue, dict):
+                    oldvalue.update(value)
+                    return
+            mydict[lastkey] = value
+            if isinstance(value, MacroProxy):
+                self.proxylist.append((mydict, lastkey))
+
+        def get_result(self, token):
+            if token is not None:
+                token[-1].proxylist.extend(self.proxylist)
+            self.proxylist[:] = []
+            return self
+
     @classmethod
     def parse_unquoted_str(cls, token, unicode=unicode):
         s = token[2]
-        if token[1] != '=':
-            if s.startswith('@'):
-                return cls.handle_include(token)
-            if '$' in s:
-                return cls.handle_macro(token)
+        if token[1] != '=' and (s.startswith('@') or '$' in s):
+            return MacroProxy(token)
         return unicode(s, 'utf-8')
-
-    @classmethod
-    def handle_include(cls, token):
-        token = list(token)
-        token[2] = token[2][1:]
-        assert token[2] and not token[2].startswith('@'), token[2]
-        fname = cls.parse_unquoted_str(tuple(token))
-        # Do whatever stuff you want here to fix the filename up
-        # (look in the current directory, whatever)
-        f = open(fname, 'rb')
-        data = f.read()
-        f.close()
-        return loads(data)
-
-    @staticmethod
-    def handle_macro(token):
-        value = StringProxy(token)
-        try:
-            return value.dereference
-        except:
-            return value
 
 loads = RsonMacros.dispatcher_factory()
 
 if __name__ == '__main__':
     test1 = '''
 fnames: []
-    foobar.txt
-foobar: @$fnames[0]
+    ignore me
+    $(fnames[3]).txt
+    ignore me too
+    $lastname
+foobar: @$fnames[1]
 messages:
     {}
         stream: sys.stderr
@@ -171,5 +213,6 @@ messages:
     {}
         stream : $messages[0].stream
         message: Bienvenue
+lastname: foobar
     '''
     print loads(test1)
