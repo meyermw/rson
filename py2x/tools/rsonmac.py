@@ -83,6 +83,7 @@ class StringProxy(object):
                     break
                 elif s.replace('_', '').isalnum():
                     lookup.append(s)
+                    s = ''
                 elif s == '[':
                     s = recurse(lookup, ']')
                     assert s == ']'
@@ -122,7 +123,7 @@ class StringProxy(object):
         return ''.join(str(x) for x in result)
 
     def __repr__(self):
-        return str(self.dereference)
+        return unicode(self.dereference, 'utf-8')
 
 class RsonMacros(RsonSystem):
     @classmethod
