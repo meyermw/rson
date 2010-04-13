@@ -1,0 +1,8 @@
+# Example include file for rsonmac.py
+this = No, I'm not typing the zen of python here.
+that = something else
+x:1
+y:
+   a
+   b
+   c
