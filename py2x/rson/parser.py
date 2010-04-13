@@ -14,6 +14,10 @@ class RsonParser(object):
     disallow_rson_sublists = False
     disallow_rson_subdicts = False
 
+    @staticmethod
+    def post_parse(tokens, value):
+        return value
+
     def parser_factory(self, len=len, type=type, isinstance=isinstance, list=list, basestring=basestring):
 
         Tokenizer = self.Tokenizer
@@ -28,6 +32,7 @@ class RsonParser(object):
         disallow_missing_object_keys = self.disallow_missing_object_keys
         key_handling = [disallow_missing_object_keys, self.disallow_multiple_object_keys]
         disallow_nonstring_keys = self.disallow_nonstring_keys
+        post_parse = self.post_parse
 
 
         def bad_array_element(token, next):
@@ -281,6 +286,6 @@ class RsonParser(object):
             if (len(value) == 1 and isinstance(value, list)
                    and disallow_missing_object_keys):
                 value = value[0]
-            return value
+            return post_parse(tokens, value)
 
         return parse

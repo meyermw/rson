@@ -32,12 +32,9 @@ class BaseObjects(object):
     # Default JSON requires string keys
     disallow_nonstring_keys = True
 
-    def default_array_factory(self):
-        ''' This function returns a constructor for RSON arrays.
-        '''
-        def new_array(startlist, token):
-            return startlist
-        return new_array
+    class default_array(list):
+        def __init__(self, startlist, token):
+            list.__init__(self, startlist)
 
     class default_object(dict):
         ''' By default, RSON objects are dictionaries that
@@ -93,5 +90,5 @@ class BaseObjects(object):
         else:
             build_object = self.default_object
 
-        build_array = self.array_hook or self.default_array_factory()
+        build_array = self.array_hook or self.default_array
         return build_object, build_array
