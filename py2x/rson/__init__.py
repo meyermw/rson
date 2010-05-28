@@ -21,7 +21,7 @@ Additional documentation available at:
 http://code.google.com/p/rson/
 '''
 
-__version__ = '0.06++'
+__version__ = '0.07'
 
 __author__ = 'Patrick Maupin <pmaupin@gmail.com>'
 

@@ -7,7 +7,10 @@ root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'rson'))
 imports = set()
 
 def splitfile(s):
-    top, bottom = s.split('\nclass ',1)
+    keywords = 'class def'.split()
+    info = [s.split('\n%s ' % x, 1) for x in keywords]
+    info.sort(key=lambda x:len(x[0]))
+    top, bottom = info[0]
     bottom = '\nclass ' + bottom
     for line in top.splitlines():
         if line.startswith('import'):
