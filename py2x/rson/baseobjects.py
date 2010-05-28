@@ -33,8 +33,8 @@ class BaseObjects(object):
     disallow_nonstring_keys = True
 
     class default_array(list):
-        def __init__(self, startlist, token):
-            list.__init__(self, startlist)
+        def __new__(self, startlist, token):
+            return list(startlist)
 
     class default_object(dict):
         ''' By default, RSON objects are dictionaries that

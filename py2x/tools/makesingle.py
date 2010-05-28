@@ -8,10 +8,11 @@ imports = set()
 
 def splitfile(s):
     keywords = 'class def'.split()
-    info = [s.split('\n%s ' % x, 1) for x in keywords]
+    keywords = ['\n%s ' % x for x in keywords]
+    info = [(s.split(x, 1) + [x]) for x in keywords]
     info.sort(key=lambda x:len(x[0]))
-    top, bottom = info[0]
-    bottom = '\nclass ' + bottom
+    top, bottom, keyword = info[0]
+    bottom = keyword + bottom
     for line in top.splitlines():
         if line.startswith('import'):
             mod, = line.split()[1:]
