@@ -154,7 +154,9 @@ class RsonMacros(RsonSystem):
         def __init__(self, startlist, token):
             if token is not None:
                 self.proxylist = token[-1].proxylist
-            list.__init__(self, startlist)
+            list.__init__(self)
+            for value in startlist:
+                self.append(value)
         def append(self, value):
             if isinstance(value, MacroProxy):
                 self.proxylist.append((self, len(self)))
@@ -208,11 +210,12 @@ loads = RsonMacros.dispatcher_factory()
 if __name__ == '__main__':
     test1 = '''
 fnames: []
+    $firstname
     ignore me
-    $(fnames[3]).txt
+    $(fnames[4]).txt
     ignore me too
     $lastname
-foobar: @$fnames[1]
+foobar: @$fnames[2]
 messages:
     {}
         stream: sys.stderr
@@ -221,5 +224,6 @@ messages:
         stream : $messages[0].stream
         message: Bienvenue
 lastname: foobar
+firstname: whoknows
     '''
     print loads(test1)
