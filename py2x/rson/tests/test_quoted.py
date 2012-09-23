@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 import sys
-from read_samples import data as samples
+from rson.tests.read_samples import data as samples
 
 # Really basic test to start with -- add more later
 
@@ -25,6 +25,6 @@ class TestQuoted(TestCase):
         tokens = list(reversed(self.t(tests, self)))
         tokens.pop()
 
-        a = map(self.q, tokens, tokens)
-        b = map(expected, tests.split())
+        a = list(map(self.q, tokens, tokens))
+        b = list(map(expected, tests.split()))
         self.assert_(a == b)

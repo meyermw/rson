@@ -4,5 +4,5 @@ import sys
 
 sys.path.insert(0, '..')
 
-import tests
-tests.main()
+import rson.tests
+rson.tests.main()

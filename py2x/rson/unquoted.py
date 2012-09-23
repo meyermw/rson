@@ -7,6 +7,7 @@ See http://code.google.com/p/rson/source/browse/trunk/license.txt
 '''
 
 import re
+import rson.py23
 
 class UnquotedToken(object):
     ''' Subclass or replace this if you don't like the unquoted
@@ -30,8 +31,7 @@ class UnquotedToken(object):
     parse_int = staticmethod(
         lambda s: int(s.replace('_', ''), 0))
     parse_float = float
-    parse_unquoted_str = staticmethod(
-        lambda token, unicode=unicode: unicode(token[2], 'utf-8'))
+    parse_unquoted_str = staticmethod(rson.py23.to_unicode2)
 
     special_strings = dict(true = True, false = False, null = None)
 

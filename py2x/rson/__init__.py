@@ -54,7 +54,7 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 
 try:
     from rson.rson_single import *
-    print '\n*** Using single file version of RSON ***\n'
+    print ('\n*** Using single file version of RSON ***\n')
 except:
     from rson.tokenizer import Tokenizer, RSONDecodeError
     from rson.unquoted import UnquotedToken

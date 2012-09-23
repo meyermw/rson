@@ -24,7 +24,7 @@ class Dispatcher(object):
             if not kw:
                 return default_loads(s)
 
-            key = tuple(sorted(kw.iteritems()))
+            key = tuple(sorted(kw.items()))
             func = cached(key)
             if func is None:
                 # Begin some real ugliness here -- just modify our instance to

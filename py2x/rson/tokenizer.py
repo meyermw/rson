@@ -7,6 +7,7 @@ See http://code.google.com/p/rson/source/browse/trunk/license.txt
 '''
 
 import re
+from rson.py23 import basestring, special_unicode, next
 
 class RSONDecodeError(ValueError):
     pass
@@ -84,7 +85,8 @@ class Tokenizer(list):
     splitter = re.compile(pattern).split
 
     @classmethod
-    def factory(cls, len=len, iter=iter, unicode=unicode, isinstance=isinstance):
+    def factory(cls, len=len, iter=iter, special_unicode=special_unicode,
+                        basestring=basestring, isinstance=isinstance, next=next):
         splitter = cls.splitter
         delimiterset = set(cls.delimiterset) | set('"')
 
@@ -92,9 +94,11 @@ class Tokenizer(list):
             self = cls()
             self.client = client
 
-            # Deal with 8 bit bytes for now
-            if isinstance(source, unicode):
-                source = source.encode('utf-8')
+            # Use "regular" strings, whatever that means for the given Python
+            if isinstance(source, special_unicode):
+                source = source.encode('utf-8', 'replace')
+            elif not isinstance(source, basestring):
+                source = source.decode('utf-8', 'replace')
 
             # Convert MS-DOS or Mac line endings to the one true way
             source = source.replace('\r\n', '\n').replace('\r', '\n')
@@ -107,25 +111,24 @@ class Tokenizer(list):
 
             # Set up to iterate over the source and add to the destination list
             sourceiter = iter(sourcelist)
-            next = sourceiter.next
-            offset -= len(next())
+            offset -= len(next(sourceiter))
 
             # Strip comment from first line
             if len(sourcelist) > 1 and sourcelist[1].startswith('#'):
                 i = 1
                 while len(sourcelist) > i and not sourcelist[i].startswith('\n'):
                     i += 1
-                    offset -= len(next())
+                    offset -= len(next(sourceiter))
 
 
             # Preallocate the list
             self.append(None)
-            self *= len(sourcelist) / 2 + 1
+            self *= len(sourcelist) // 2 + 1
             index = 0
 
             # Create all the tokens
             for token in sourceiter:
-                whitespace = next()
+                whitespace = next(sourceiter)
                 t0 = token[0]
                 if t0 not in delimiterset:
                     if t0 == '\n':

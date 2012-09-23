@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 import sys
-from read_samples import data as samples
+from rson.tests.read_samples import data as samples
 
 def strip_comments(text):
     for line in text.splitlines(True):

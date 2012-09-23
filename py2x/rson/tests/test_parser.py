@@ -3,17 +3,22 @@ import os
 from json import loads as sysloads
 from rson import loads as newloads
 
+from rson.py23 import basestring
 
-rootdir = os.path.join(os.path.dirname(__file__), '..')
+rootdir = os.path.dirname(__file__)
 
 class TestParser(TestCase):
 
     def test_parser(self):
         sourcedir = os.path.join(rootdir, 'styles')
-        strings = [open(os.path.join(sourcedir, x), 'rb').read() for x in os.listdir('styles') if x.endswith('json')]
+        strings = [open(os.path.join(sourcedir, x), 'rb').read() for x in os.listdir(sourcedir) if x.endswith('json')]
 
         for s in strings:
-            self.assert_(sysloads(s) == newloads(s))
+            s2 = s
+            if not isinstance(s, basestring):
+                s2 = s.decode('utf-8', 'replace')
+
+            self.assert_(sysloads(s2) == newloads(s))
 
     def test_rson_vs_json(self):
         result = []
@@ -61,7 +66,11 @@ num7 = .2
 
 '''
         testdict = {}
-        exec teststr in testdict
+        try:
+            exec(teststr, testdict)
+        except:
+            exec('exec teststr in testdict')
+
         del testdict['__builtins__']
 
         self.assertEquals(testdict, newloads(teststr.replace('=', ':')))

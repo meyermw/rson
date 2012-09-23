@@ -6,6 +6,8 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
 See http://code.google.com/p/rson/source/browse/trunk/license.txt
 '''
 
+from rson.py23 import basestring
+
 class RsonParser(object):
     ''' Parser for RSON
     '''
