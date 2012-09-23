@@ -12,7 +12,7 @@ See http://code.google.com/p/rson/source/browse/trunk/license.txt
 import sys
 import re
 
-sys.path[0:0] = '..', 'simplejson'
+sys.path[0:0] = '..', '../../../simplejson'
 
 import simplejson
 import simplejson.tests
@@ -66,8 +66,10 @@ class CJsonSystem(rson.RsonSystem):
         Infinity | NaN            |
         (?P<num>
             -?                          # Optional minus sign
-            (?:0|[1-9]\d*)              # Zero or digits with non-zero lead
+            (?:0|[1-9]\d*)        |     # Zero or digits with non-zero lead
             (?P<float>
+               -?                       # Optional minus sign
+               (?:0|[1-9]\d*)
                (?:\.\d+)?               # Optional frac part
                (?:[eE][-+]?\d+)?        # Optional exponent
             )
