@@ -180,8 +180,13 @@ class Tokenizer(list):
             text = token[2]
             loc = 'line %s, column %s, text %s' % (lineno, colno, repr(text[:20]))
 
+        source = token[-1].source
+        sourcelen = len(source) - (source[-1] == '\n')
+
         err = RSONDecodeError('%s: %s' % (s, loc))
         err.pos = offset
         err.lineno = lineno
         err.colno = colno
+        err.endlineno = source.count('\n', 0, sourcelen) + 1
+        err.endcolno = sourcelen - source.rfind('\n', 0, sourcelen)
         raise err

@@ -26,7 +26,7 @@ import rson
 oldloc = rson.Tokenizer.sourceloc
 def sourceloc(token):
     offset, lineno, colno = oldloc(token)
-    return offset-1, lineno, colno-1
+    return offset-1, lineno, max(colno-1, 1)
 rson.Tokenizer.sourceloc = staticmethod(sourceloc)
 
 class CJsonSystem(rson.RsonSystem):
