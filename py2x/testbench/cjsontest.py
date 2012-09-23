@@ -82,10 +82,10 @@ class CJsonSystem(rson.RsonSystem):
     special_strings = dict(true = True, false = False, null = None,
                            Infinity = float('inf'), NaN = float('NaN'))
 
-    # RSON does not care about weird control characters embedded in strings.
-    # To pass the simplejson test suite, make it care about \x1f.
+    # RSON does not care about weird control characters embedded in strings,
+    # but JSON does.  To pass the simplejson test suite, make it care about these.
 
-    quoted_splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|"|[\x1f])').split
+    quoted_splitter = re.compile(r'(\\u[0-9a-fA-F]{4}|\\.|"|[\x00-\x1f])').split
 
 simplejson.loads = CJsonSystem.dispatcher_factory()
 simplejson.JSONDecodeError = rson.RSONDecodeError
