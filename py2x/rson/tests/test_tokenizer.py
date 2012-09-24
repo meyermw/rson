@@ -13,7 +13,7 @@ def strip_comments(text):
 class TestTokenizer(TestCase):
 
     def setUp(self):
-        from rson.tokenizer import Tokenizer
+        from rson.base import Tokenizer
         self.t = Tokenizer.factory()
         self.delimiters = Tokenizer.delimiterset
         self.delimiters2 = self.delimiters | set('@')

@@ -23,9 +23,8 @@ def expected(s):
 class TestUnquoted(TestCase):
 
     def setUp(self):
-        from rson.tokenizer import Tokenizer
+        from rson.base import Tokenizer, UnquotedToken
         self.t = Tokenizer.factory()
-        from rson.unquoted import UnquotedToken
         self.u = UnquotedToken().unquoted_parse_factory()
 
     def test_simple(self):

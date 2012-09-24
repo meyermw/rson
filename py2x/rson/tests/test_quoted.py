@@ -15,9 +15,8 @@ def expected(s):
 class TestQuoted(TestCase):
 
     def setUp(self):
-        from rson.tokenizer import Tokenizer
+        from rson.base import Tokenizer, QuotedToken
         self.t = Tokenizer.factory()
-        from rson.doublequoted import QuotedToken
         self.q = QuotedToken().quoted_parse_factory()
 
     def test_simple(self):

@@ -1,12 +1,3 @@
-
-################################################################################
-####  NOTE:  THIS IS STILL IN DEVELOPMENT:                                  ####
-####                                                                        ####
-####    - No encoder                                                        ####
-####    - Needs more tests!                                                 ####
-####                                                                        ####
-################################################################################
-
 '''
 RSON -- readable serial object notation
 
@@ -26,7 +17,7 @@ __version__ = '0.08'
 __author__ = 'Patrick Maupin <pmaupin@gmail.com>'
 
 __copyright__ = '''
-Copyright (c) 2010, Patrick Maupin.  All rights reserved.
+Copyright (c) 2010-2012, Patrick Maupin.  All rights reserved.
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -50,21 +41,4 @@ Copyright (c) 2010, Patrick Maupin.  All rights reserved.
  OTHER DEALINGS IN THE SOFTWARE.
  '''
 
-# RSON is developed using multiple modules, but released as a single module
-
-try:
-    from rson.rson_single import *
-    print ('\n*** Using single file version of RSON ***\n')
-except:
-    from rson.tokenizer import Tokenizer, RSONDecodeError
-    from rson.unquoted import UnquotedToken
-    from rson.doublequoted import QuotedToken
-    from rson.equals import EqualToken
-    from rson.dispatcher import Dispatcher
-    from rson.baseobjects import BaseObjects
-    from rson.parser import RsonParser
-
-    class RsonSystem(RsonParser, UnquotedToken, QuotedToken, EqualToken, Dispatcher, BaseObjects):
-        Tokenizer = Tokenizer
-
-    loads = RsonSystem.dispatcher_factory()
+from rson.base import RSONDecodeError, loads

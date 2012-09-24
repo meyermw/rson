@@ -1,5 +1,6 @@
 # Deal with Python2/3 differences
 
+
 try:
     unicode = unicode
 except NameError:
@@ -26,4 +27,3 @@ try:
     next = next
 except:
     next = lambda x: x.next()
-
