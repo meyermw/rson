@@ -6,9 +6,9 @@ Readable Serial Object Notation  (RSON)
 
     ###Page###
 
-Version 0.06
+Version 0.9
 
-Copyright (c) 2010 Patrick Maupin
+Copyright (c) 2010-2012 Patrick Maupin
 
 .. contents::
 
@@ -323,9 +323,11 @@ strings, and strings following '=' on a single line:
 Implementation and use
 ========================
 
-Currently, there is a Python RSON decoder available at `http://code.google.com/p/rson/`__.
+There is a Python RSON decoder available, which can be downloaded from `googlecode`__.
+You can also use 'pip rson' or 'easy_install rson' to download it.  It works with
+both Python 2 and Python 3 from a single codebase.
 
-The decoder is made available as a single file download, and works like the JSON decoder:
+The base profile of the decoder works like the JSON decoder:
 
     from rson import loads
 
@@ -333,14 +335,23 @@ The decoder is made available as a single file download, and works like the JSON
 
 The decoder is built in a manner that facilitates replacing parts of the decoder, as
 necessary.  For example, you could easily use the Decimal class instead of floats.  It
-supports many of the same options as json/simplejson.  In fact, a `subclassed version of
-the decoder`__ passes the simplejson regression.
+supports many of the same options as json/simplejson.  In fact, a subclassed version of
+the decoder passes the simplejson regression suite.
+
+Currently, there is no generic RSON encoder, although there is an example one
+available in the `rst2pdf package`__ that will dump the stylesheets and/or
+convert old-style JSON stylesheets into RSON.  The purpose of RSON is to look nice, and
+what "looks nice" is application-specific.
 
 __ http://code.google.com/p/rson/
-__ http://code.google.com/p/rson/source/browse/trunk/py2x/testbench/cjsontest.py
+__ http://code.google.com/p/rst2pdf/source/browse/trunk/rst2pdf/dumpstyle.py
+
 
 Future plans
 ==================
 
-RSON is a work in progress.  An encoder will be built at some point, but most changes
-will be driven by user feedback to the rson-discuss google group.
+RSON is a work in progress.  A more general purpose encoder may be built at some point,
+but most changes will be driven by user feedback to the rson-discuss google group.
+
+RSON has proven invaluable for building mini-declarative languages, and some of these
+will be made available as additional profiles in addition to the base profile.

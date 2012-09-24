@@ -2,7 +2,7 @@
 
 import sys
 import subprocess
-sys.path.insert(0, '../py2x')
+sys.path.insert(0, '..')
 from rson import loads
 from simplejson import dumps
 
