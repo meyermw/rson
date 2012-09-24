@@ -29,7 +29,7 @@ def all_tests_suite():
     return unittest.TestSuite(suite)
 
 def simple_json_tests():
-    sjroot = os.path.join(os.path.dirname(os.path.dirname(root)), 'simplejson')
+    sjroot = os.path.join(os.path.dirname(root), 'simplejson')
     sys.path[0:0] = sjroot + str(sys.version_info[0]), sjroot
     try:
         import simplejson
