@@ -1,0 +1,3 @@
+include *.txt
+include tools/*.py tools/*.txt
+include rson/tests/styles/*.json rson/tests/*.rson rson/tests/*.txt rson/tests/*.py
