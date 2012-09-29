@@ -9,6 +9,13 @@ Copyright (c) 2012, Patrick Maupin
 
 .. contents::
 
+Abstract
+============
+
+rsonlite is the easiest way to create custom indented data file
+formats in Python.  It is a single small module that can be shipped
+with your application, or it can be easy-installed or pipped from PyPI.
+
 Background
 =============
 
@@ -59,10 +66,12 @@ Syntax
 
 The only special characters are **#**, **=**, and indentation:
 
-  - Indentation denotes a key/value relationship.  The
+  Indentation
+    Indentation denotes a key/value relationship.  The
     value is indented from the key.
 
-  - **=** Denotes the start of a free-format string.  These
+  =
+    Denotes the start of a free-format string.  These
     strings can contain '=' and '#' characters, and
     even be multi-line, but every line in the string
     must be indented past the initial equal sign.
@@ -74,19 +83,17 @@ The only special characters are **#**, **=**, and indentation:
     additional rsonlite to be parsed later, to exist
     inside multi-line strings.
 
-  - **#** Denotes the start of a line comment, when not
-      inside a free-format string.
+  #
+    Denotes the start of a line comment, when not
+    inside a free-format string.
 
 Objects
 ---------
 
-rsonlite.loads
-~~~~~~~~~~~~~~~
-
 The only Python objects resulting from parsing a file
-with rsonlite.loads are:
+with rsonlite.loads() are:
 
-  strings:
+  strings
     free-format strings (described above) can
     contain any character, but the whitespace
     before/after the string may be stripped.
@@ -97,22 +104,19 @@ with rsonlite.loads are:
     Regular strings may be used as keys in key/value
     pairs, but free-format strings may not.
 
-   tuple:
+  tuple
     A key/value pair is a two-element tuple.  The key is always
     a string.  The value is always a list.  (It was judged
     that the consistency of always having the value be a list
     was more useful than the shortcut of simply letting the
     value sometimes be a single string.)
 
-   list:
+  list
     The top level is a list, and the value element of every
     key/value pair tuple is also a list.  Lists can contain
     strings and key/value pair tuples.
 
-rsonlite.simpledict
-~~~~~~~~~~~~~~~~~~~~~~
-
-rsonlite.simpledict leverages rsonlite.loads to return a data
+rsonlite.simpleparse() leverages rsonlite.loads to return a data
 structure with dictionaries.  Ordered dictionaries are used if
 they are available, otherwise standard dictionaries are used.
 
@@ -136,7 +140,7 @@ thing to compare and contrast rsonlite against.
 
 __ http://json.org/example.html
 
-The first JSON example is::
+Example 1::
 
     >>> import rsonlite
     >>> jsonstr1 = '''
@@ -153,7 +157,7 @@ The first JSON example is::
     ...                     "Acronym": "SGML",
     ...                     "Abbrev": "ISO 8879:1986",
     ...                     "GlossDef": {
-    ...                         "para": "A meta-markup language, used to create markup languages such as DocBook.",
+    ...                         "para": "A meta-markup language",
     ...                         "GlossSeeAlso": ["GML", "XML"]
     ...                     },
     ...                     "GlossSee": "markup"
@@ -177,7 +181,7 @@ The first JSON example is::
     ...                     Acronym = SGML
     ...                     Abbrev = ISO 8879:1986
     ...                     GlossDef
-    ...                         para = A meta-markup language, used to create markup languages such as DocBook.
+    ...                         para = A meta-markup language
     ...                         GlossSeeAlso = [GML, XML]
     ...                     GlossSee = markup
     ... '''
@@ -187,7 +191,8 @@ The first JSON example is::
     >>> jsondata1 == rsondata1
     True
 
-    >>>
+Example 2::
+
     >>> jsonstr2 = '''
     ... {"menu": {
     ...     "id": "file",
@@ -224,4 +229,141 @@ The first JSON example is::
 API
 ====
 
+rsonlite.loads(source)
+------------------------
 
+This is the primary interface.  It returns a list of tuples,
+strings, and lists, as defined in the introduction.
+
+rsonlite.dumps(data, indent='    ', initial_indent='')
+--------------------------------------------------------
+
+This function takes data as returned from loads() and dumps it
+back out to a string.  For example::
+
+    >>> rsondata1 = rsonlite.loads(rsonstr1)
+    >>> roundtrip = rsonlite.dumps(rsondata1, initial_indent='    ')
+    >>> roundtrip == rsonstr1[1:]    # Get past initial \n
+    True
+
+    >>> rsondata2 = rsonlite.loads(rsonstr2)
+    >>> roundtrip = rsonlite.dumps(rsondata2, initial_indent='    ')
+    >>> roundtrip == rsonstr2[1:]    # Get past initial \n
+    True
+
+rsonlite.pretty(data, indent='    ')
+---------------------------------------
+
+This pretty-prints a data structure created by loads() for debugging.
+The structure is accurate, yet quasi-readable::
+
+    >>> data = rsonlite.loads(rsonstr2)
+    >>> pretty = rsonlite.pretty(data)
+    >>> print pretty,
+    [
+        ('menu', [
+            ('id', ['file']),
+            ('value', ['File']),
+            ('popup', [
+                ('menuitem', [
+                    ('value', ['New']),
+                    ('onclick', ['CreateNewDoc()']),
+                    ('value', ['Open']),
+                    ('onclick', ['OpenDoc()']),
+                    ('value', ['Close']),
+                    ('onclick', ['CloseDoc()']),
+                ])
+            ])
+        ])
+    ]
+    >>> eval(pretty) == data
+    True
+    >>>
+
+rsonlite.simpleparse(source, stringparse=stringparse, stddict=stddict)
+------------------------------------------------------------------------
+
+This is a convenience wrapper on loads for simple data structures, and
+also provides an example client for loads.  This is the interface that
+was used in the JSON example section above.  Parameters:
+
+  source
+    source may either be a string that is passed to loads, or a list,
+    that is assumed to be the result of running loads on a string.
+
+  stringparse
+    stringparse is a function that accepts a (non-key) string, and
+    returns a parsed value of the string.  The default example stringparse
+    in rsonlite will handle the JSON keywords true, false and null, and
+    will also translate really simple arrays of strings, as shown
+    in the [GML, XML] example above.
+
+  stddict
+    stddict defaults to collections.OrderedDict if available, or a regular
+    dict if not.  You may substitute a third-party OrderedDict if desired.
+
+Tests
+=======
+
+Empty input::
+
+    >>> rsonlite.loads('') == rsonlite.loads('   \n \n     \n') == []
+    True
+
+Bad indentation::
+
+    >>> rsonlite.loads('a\n    b\n  c')
+    Traceback (most recent call last):
+      File "<doctest README.txt[22]>", line 1, in <module>
+        rsonlite.loads('a\n    b\n  c')
+      File "/home/pat/projects/opensource/rson/lite/rsonlite.py", line 179, in loads
+        raise err
+    IndentationError: unindent does not match any outer indentation level (<rsonlite>, line 3)
+
+Multiline data, with special characters::
+
+    >>> teststr = '''
+    ...     My key =
+    ...            This is indented #=
+    ...       This should be at the left edge ===#
+    ...           This is indented differently
+    ... '''
+    >>> test2 = '\n'.join(x[6:] for x in teststr.splitlines()[2:])
+    >>> rsonlite.loads(teststr) == [('My key', [test2])]
+    True
+
+    >>> teststr = '''
+    ...     My key =  Something on the first line is at the left edge
+    ...            This is indented
+    ...       This should be at the left edge
+    ...           This is indented differently
+    ... '''
+    >>> test2 = teststr.split('=', 1)[1].strip().splitlines()
+    >>> for i in range(1, len(test2)):
+    ...   test2[i] = test2[i][6:]
+    >>> test2 = '\n'.join(test2)
+    >>> rsonlite.loads(teststr) == [('My key', [test2])]
+    True
+
+Comments and special string stuff::
+
+    >>> test1 = '''
+    ...   a
+    ...      b = 1
+    ...       This is part of b's string
+    ...      c
+    ...   d = 2
+    ... '''
+    >>> test2 = '''
+    ... # Comments can start anywhere outside a string
+    ...   a   # Like here  (but not below)
+    ...      b = 1
+    ...       This is part of b's string
+    ...      # This isn't in the string because it's far enough left
+    ...      # Any non-key string can start with '='
+    ...      = c
+    ...      # This isn't in the string because it's far enough left
+    ...   d = 2
+    ... '''
+    >>> rsonlite.loads(test1) == rsonlite.loads(test2)
+    True

@@ -190,7 +190,7 @@ def loads(source):
     result, = result
     return [] if result is None else result[1]
 
-def dumps(data, indent='    '):
+def dumps(data, indent='    ', initial_indent=''):
     ''' Dump a string loaded with loads back out.
     '''
     def getstring(data, indent2):
@@ -199,7 +199,7 @@ def dumps(data, indent='    '):
         return data
 
     def recurse(data, indent2):
-        assert isinstance(data, list)
+        assert isinstance(data, list), repr(data)
         for data in data:
             if isinstance(data, tuple):
                 key, value = data
@@ -217,7 +217,7 @@ def dumps(data, indent='    '):
                     append('%s%s' % (indent2, data))
     result = []
     append = result.append
-    recurse(data, '')
+    recurse(data, initial_indent)
     append('')
     return '\n'.join(result)
 
@@ -233,7 +233,7 @@ def pretty(data, indent='    '):
             assert isinstance(data, (tuple, basestring))
             if isinstance(data, tuple) and (
                        len(data[1]) != 1 or not isinstance(data[1][0], basestring)):
-                append('%s(%s, [' % (indent2, data[0]))
+                append('%s(%s, [' % (indent2, repr(data[0])))
                 recurse(data[1], indent2 + indent)
                 append('%s])' % (indent2))
             else:
