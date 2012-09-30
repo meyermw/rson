@@ -25,8 +25,40 @@ class UnquotedToken(object):
           - Numbers can be left-zero-filled
           - If a decimal point is present, digits are required on either side,
             but not both sides
+
+        Replacement can be made at several levels:
+          Minor:
+            - Functions for int/float/string parsing can be replaced
+                - decimal module can be used or not
+            - regex pattern can be replaced
+            - special strings can be replaced
+          Major:
+            - user_defined_unquoted can be set true to use UserHandledTokens,
+              or to another callable to use it.
     '''
 
+    class UserHandledToken(str):
+        '''  UserHandledToken is not used by default, but it will
+             be used for all unquoted strings if user_defined_unquoted
+             is set to True (or any non-zero int).
+
+             UserHandledToken can be used to get a string that
+             is suitable for later parsing.  Or as an example
+             of a callable to place in the user_defined_unquoted
+             attribute.
+        '''
+        def __new__(cls, token, next, new=str.__new__):
+            self = new(cls, token[2])
+            self.token = token
+            return self
+        @property
+        def line(self):
+            return self.token[-1].sourceloc(self.token)[1]
+        @property
+        def col(self):
+            return self.token[-1].sourceloc(self.token)[2]
+
+    user_defined_unquoted = False
     use_decimal = False
     parse_int = staticmethod(
         lambda s: int(s.replace('_', ''), 0))
@@ -59,6 +91,10 @@ class UnquotedToken(object):
     '''
 
     def unquoted_parse_factory(self):
+        userdefined = self.user_defined_unquoted
+        if userdefined:
+            return self.UserHandledToken if isinstance(userdefined, int) else userdefined
+
         unquoted_match = re.compile(self.unquoted_pattern,
                         re.VERBOSE).match
 

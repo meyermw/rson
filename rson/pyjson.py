@@ -31,6 +31,10 @@ class PyJsonSystem(rson.base.RsonSystem):
     parse_int = int
     disallow_multiple_object_keys = True
 
+    # simplejson sets these, but doesn't test for them, and I
+    # haven't bothered to implement them, or even figure out what they do.
+    allowed_extra_attributes = set('encoding parse_constant cls'.split())
+
     # simplejson requires an unquoted literal to be
     # a number or one of the special values like true
     # or false, so report an error instead of wrapping
