@@ -184,7 +184,7 @@ class Tokenizer(list):
             loc = 'line %s, column %s, text %s' % (lineno, colno, repr(text[:20]))
 
         source = token[-1].source
-        sourcelen = len(source) - (source[-1] == '\n')
+        sourcelen = source and (len(source) - (source[-1] == '\n')) or 0
 
         err = RSONDecodeError('%s: %s' % (s, loc))
         err.pos = offset

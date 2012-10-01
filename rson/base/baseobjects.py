@@ -32,6 +32,11 @@ class BaseObjects(object):
     # Default JSON requires string keys
     disallow_nonstring_keys = True
 
+    # Setting this true allows easy creation of raw
+    # objects without subclassing
+    create_raw_objects = False
+
+
     class default_array(list):
         def __new__(self, startlist, token):
             return list(startlist)
@@ -67,6 +72,23 @@ class BaseObjects(object):
         def get_result(self, token):
             return self
 
+    class raw_object(list):
+        ''' This can be used as the default_object for
+            compatibility with rsonlite.
+        '''
+        def append(self, item, do_append=list.append):
+            if len(item) == 1:
+                item = item[0]
+            else:
+                key, value = item
+                if isinstance(value, basestring):
+                    value = [value]
+                item = key, value
+            do_append(self, item)
+        def get_result(self, token):
+            self.token = token
+            return self
+
     def object_type_factory(self, dict=dict, tuple=tuple):
         ''' This function returns constructors for RSON objects and arrays.
             It handles simplejson compatible hooks as well.
@@ -79,16 +101,16 @@ class BaseObjects(object):
                 def get_result(self, token):
                     return object_pairs_hook([tuple(x) for x in self])
             self.disallow_multiple_object_keys = True
-            self.disallow_nonstring_keys = True
         elif object_hook is not None:
             mydict = dict
             class build_object(list):
                 def get_result(self, token):
                     return object_hook(mydict(self))
             self.disallow_multiple_object_keys = True
-            self.disallow_nonstring_keys = True
         else:
-            build_object = self.default_object
+            build_object = (self.raw_object
+                                if self.create_raw_objects
+                                else self.default_object)
 
         build_array = self.array_hook or self.default_array
         return build_object, build_array
